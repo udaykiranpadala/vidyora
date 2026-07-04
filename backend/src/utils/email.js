@@ -1,18 +1,11 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-const getTransporter = () => {
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
-  if (!user || !pass) {
-    throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment variables");
+const getApiKey = () => {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing BREVO_API_KEY in environment variables");
   }
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user,
-      pass,
-    },
-  });
+  return apiKey;
 };
 
 const baseTemplate = (title, otp, color) => `
@@ -32,24 +25,48 @@ export const sendOtpEmail = async (toEmail, otp) => {
   // Print OTP to console for easy local development/testing
   console.log(`[DEVELOPMENT] Signup OTP for ${toEmail}: ${otp}`);
 
-  const transporter = getTransporter();
-  await transporter.sendMail({
-    from: `"Vidyora" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: "Your verification code",
-    html: baseTemplate("Verify your email", otp, "#4F46E5"),
-  });
+  const apiKey = getApiKey();
+  const senderEmail = process.env.EMAIL_USER || "udaykiranpadala1818@gmail.com";
+
+  await axios.post(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      sender: { name: "Vidyora", email: senderEmail },
+      to: [{ email: toEmail }],
+      subject: "Your verification code",
+      htmlContent: baseTemplate("Verify your email", otp, "#4F46E5"),
+    },
+    {
+      headers: {
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+        "accept": "application/json",
+      },
+    }
+  );
 };
 
 export const sendResetOtpEmail = async (toEmail, otp) => {
   // Print OTP to console for easy local development/testing
   console.log(`[DEVELOPMENT] Password Reset OTP for ${toEmail}: ${otp}`);
 
-  const transporter = getTransporter();
-  await transporter.sendMail({
-    from: `"Vidyora" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: "Reset your password verification code",
-    html: baseTemplate("Reset your password", otp, "#EF4444"),
-  });
+  const apiKey = getApiKey();
+  const senderEmail = process.env.EMAIL_USER || "udaykiranpadala1818@gmail.com";
+
+  await axios.post(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      sender: { name: "Vidyora", email: senderEmail },
+      to: [{ email: toEmail }],
+      subject: "Reset your password verification code",
+      htmlContent: baseTemplate("Reset your password", otp, "#EF4444"),
+    },
+    {
+      headers: {
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+        "accept": "application/json",
+      },
+    }
+  );
 };
