@@ -1,8 +1,9 @@
 import axios from "axios";
 
-// Plain axios instance - test-takers never have an organizer JWT,
-// so we don't use the interceptor-equipped client here.
-const publicApi = axios.create({ baseURL: "/api" });
+// Use Vercel environment variable in production, localhost in development
+const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+});
 
 export const attemptApi = {
   join: (accessCode, data) => publicApi.post(`/attempts/join/${accessCode}`, data),
