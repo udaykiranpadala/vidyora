@@ -290,19 +290,19 @@ html:has(.font-expert) {
 
 /* The actual login / signup / reset cards are themed in Blue */
 .auth-card {
-  --color-accent: #1D55D8; /* Softened blue accent (5% less bright) */
-  --color-accent-deep: #1944BC;
-  --color-accent-soft: rgba(29, 85, 216, 0.12);
-  --color-success: #2572EE; /* Softer light blue */
-  --color-success-soft: rgba(37, 114, 238, 0.12);
+  --color-accent: #194AC6; /* Softened blue accent (another 5% less bright) */
+  --color-accent-deep: #153BA0;
+  --color-accent-soft: rgba(25, 74, 198, 0.12);
+  --color-success: #155EEF; /* Softer corporate blue */
+  --color-success-soft: rgba(21, 94, 239, 0.12);
 }
 
 :root.light .auth-card {
-  --color-accent: #1D55D8;
-  --color-accent-deep: #1944BC;
-  --color-accent-soft: rgba(29, 85, 216, 0.08);
-  --color-success: #2572EE;
-  --color-success-soft: rgba(37, 114, 238, 0.08);
+  --color-accent: #194AC6;
+  --color-accent-deep: #153BA0;
+  --color-accent-soft: rgba(25, 74, 198, 0.08);
+  --color-success: #155EEF;
+  --color-success-soft: rgba(21, 94, 239, 0.08);
 }
 
 /* Auth page hero grid adapts to the selected theme's accent color (green in dark mode) */
