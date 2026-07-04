@@ -242,19 +242,21 @@ html:has(.font-expert) {
     0 0 20px rgba(var(--glow-color, 5, 150, 105), 0.1);
 }
 
-/* ─── Auth pages (Login / Signup / Reset Password) keep original blue palette ─── */
+/* ─── Auth pages (Login / Signup / Reset Password) ─── */
 .auth-page {
-  --color-paper: #0F172A;
-  --color-surface: #111827;
-  --color-card: #1F2937;
-  --color-line: #374151;
+  /* Use the dashboard's charcoal/black background variables */
+  --color-paper: #0B0F14;
+  --color-surface: #11151D;
+  --color-card: #1B202A;
+  --color-line: #272D3A;
 
-  --color-accent: #2563EB;
-  --color-accent-deep: #1D4ED8;
-  --color-accent-soft: rgba(37, 99, 235, 0.12);
+  /* Global page accent defaults to Green (for the left pane / illustration) */
+  --color-accent: #059669;
+  --color-accent-deep: #047857;
+  --color-accent-soft: rgba(5, 150, 105, 0.12);
 
-  --color-success: #22C55E;
-  --color-success-soft: rgba(34, 197, 94, 0.12);
+  --color-success: #10B981;
+  --color-success-soft: rgba(16, 185, 129, 0.12);
   --color-danger: #EF4444;
   --color-danger-soft: rgba(239, 68, 68, 0.12);
   --color-warning: #F59E0B;
@@ -265,14 +267,15 @@ html:has(.font-expert) {
 }
 
 :root.light .auth-page {
-  --color-paper: #F8FAFC;
+  /* Use the dashboard's light background variables */
+  --color-paper: #F4F6F8;
   --color-surface: #FFFFFF;
-  --color-card: #F1F5F9;
-  --color-line: #E2E8F0;
+  --color-card: #EAEFF2;
+  --color-line: #DCE2E6;
 
-  --color-accent: #2563EB;
-  --color-accent-deep: #1D4ED8;
-  --color-accent-soft: rgba(37, 99, 235, 0.08);
+  --color-accent: #059669;
+  --color-accent-deep: #047857;
+  --color-accent-soft: rgba(5, 150, 105, 0.08);
 
   --color-success: #16A34A;
   --color-success-soft: rgba(22, 163, 74, 0.08);
@@ -285,11 +288,28 @@ html:has(.font-expert) {
   --color-ink-secondary: #475569;
 }
 
-/* Auth page hero grid keeps the original blue tint */
+/* The actual login / signup / reset cards are themed in Blue */
+.auth-card {
+  --color-accent: #2563EB; /* Blue accent for inputs, buttons, and links */
+  --color-accent-deep: #1D4ED8;
+  --color-accent-soft: rgba(37, 99, 235, 0.12);
+  --color-success: #3B82F6; /* Change success gradient endpoint to blue */
+  --color-success-soft: rgba(59, 130, 246, 0.12);
+}
+
+:root.light .auth-card {
+  --color-accent: #2563EB;
+  --color-accent-deep: #1D4ED8;
+  --color-accent-soft: rgba(37, 99, 235, 0.08);
+  --color-success: #3B82F6;
+  --color-success-soft: rgba(59, 130, 246, 0.08);
+}
+
+/* Auth page hero grid adapts to the selected theme's accent color (green in dark mode) */
 .auth-page .hero-grid {
   background-image:
-    linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+    linear-gradient(var(--color-accent-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-accent-soft) 1px, transparent 1px);
   background-size: 32px 32px;
   background-color: var(--color-paper);
 }
