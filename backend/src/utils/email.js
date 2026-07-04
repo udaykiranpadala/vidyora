@@ -22,23 +22,37 @@ const baseTemplate = (title, otp, color) => `
 `;
 
 export const sendOtpEmail = async (toEmail, otp) => {
+  // Print OTP to console for easy local development/testing
+  console.log(`[DEVELOPMENT] Signup OTP for ${toEmail}: ${otp}`);
+
   const resend = getResend();
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: "Vidyora - Exam Platform <onboarding@resend.dev>",
     to: toEmail,
     subject: "Your verification code",
     html: baseTemplate("Verify your email", otp, "#4F46E5"),
   });
+
+  if (error) {
+    throw new Error(`Resend Error: ${error.message || JSON.stringify(error)}`);
+  }
 };
 
 export const sendResetOtpEmail = async (toEmail, otp) => {
+  // Print OTP to console for easy local development/testing
+  console.log(`[DEVELOPMENT] Password Reset OTP for ${toEmail}: ${otp}`);
+
   const resend = getResend();
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: "Vidyora - Exam Platform <onboarding@resend.dev>",
     to: toEmail,
     subject: "Reset your password verification code",
     html: baseTemplate("Reset your password", otp, "#EF4444"),
   });
+
+  if (error) {
+    throw new Error(`Resend Error: ${error.message || JSON.stringify(error)}`);
+  }
 };
