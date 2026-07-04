@@ -164,7 +164,7 @@ export default function Signup() {
             <div className="w-full max-w-md bg-surface border border-line rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden auth-card">
               
               {/* Card Top Decoration Line (Emerald Green theme) */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-accent-deep via-accent to-success" />
+              <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "linear-gradient(to right, #047857, #059669, #10B981)" }} />
               
               <div className="text-center mb-4">
                 <h1 className="font-display text-3xl font-extrabold tracking-tight">
