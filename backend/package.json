@@ -1,5 +1,5 @@
 {
-  "name": "exam-platform-backend",
+  "name": "vidyora-backend",
   "version": "1.0.0",
   "description": "Backend API for college coding exam platform",
   "main": "src/server.js",

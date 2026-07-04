@@ -18,7 +18,7 @@ export const sendOtpEmail = async (toEmail, otp) => {
   const transporter = createTransporter();
 
   await transporter.sendMail({
-    from: `"Exam Platform" <${process.env.EMAIL_USER}>`,
+    from: `"Vidyora - Exam Platform" <${process.env.EMAIL_USER}>`,
     to: toEmail,
     subject: "Your verification code",
     html: `
@@ -38,7 +38,7 @@ export const sendResetOtpEmail = async (toEmail, otp) => {
   const transporter = createTransporter();
 
   await transporter.sendMail({
-    from: `"Exam Platform" <${process.env.EMAIL_USER}>`,
+    from: `"Vidyora - Exam Platform" <${process.env.EMAIL_USER}>`,
     to: toEmail,
     subject: "Reset your password verification code",
     html: `
