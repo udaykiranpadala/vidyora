@@ -162,7 +162,7 @@ export default function Landing() {
               <>
                 <Link to="/signup" className="w-full sm:w-auto">
                   <Button 
-                    className="w-full px-8 py-3 text-base !bg-blue-600 hover:!bg-blue-700 active:scale-95 transition-all"
+                    className="w-full px-8 py-3 text-base !bg-[#1D55D8] hover:!bg-[#1944BC] active:scale-95 transition-all"
                     glowColor="37, 99, 235"
                   >
                     Get started free →

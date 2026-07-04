@@ -107,7 +107,7 @@ export default function Navbar() {
               <Link to="/signup">
                 <Button 
                   variant="primary" 
-                  className="px-3.5 py-2 text-sm !bg-blue-600 hover:!bg-blue-700 active:scale-95 transition-all"
+                  className="px-3.5 py-2 text-sm !bg-[#1D55D8] hover:!bg-[#1944BC] active:scale-95 transition-all"
                   glowColor="37, 99, 235"
                 >
                   Sign up
