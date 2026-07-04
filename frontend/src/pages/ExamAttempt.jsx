@@ -145,8 +145,10 @@ export default function ExamAttempt() {
     if (isLobby) return; // Don't fire if still in lobby (exam not started)
     const handleBeforeUnload = () => {
       if (!attemptId) return;
-      // sendBeacon is fire-and-forget — works even during page unload
-      const url = `${import.meta.env.VITE_API_URL || ""}/api/attempts/${attemptId}/complete`;
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
+      const url = baseUrl.endsWith("/api")
+        ? `${baseUrl}/attempts/${attemptId}/complete`
+        : `${baseUrl}/api/attempts/${attemptId}/complete`;
       navigator.sendBeacon(url, new Blob([JSON.stringify({ autoSubmitted: true })], { type: "application/json" }));
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
