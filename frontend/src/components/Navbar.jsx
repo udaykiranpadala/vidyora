@@ -105,7 +105,13 @@ export default function Navbar() {
                 <Button variant="ghost" className="px-3.5 py-2 text-sm">Log in</Button>
               </Link>
               <Link to="/signup">
-                <Button variant="primary" className="px-3.5 py-2 text-sm">Sign up</Button>
+                <Button 
+                  variant="primary" 
+                  className="px-3.5 py-2 text-sm !bg-blue-600 hover:!bg-blue-700 active:scale-95 transition-all"
+                  glowColor="37, 99, 235"
+                >
+                  Sign up
+                </Button>
               </Link>
             </div>
           )}

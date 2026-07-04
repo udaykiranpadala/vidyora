@@ -4,6 +4,7 @@ import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import ShinyText from "../components/ShinyText";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -41,11 +42,11 @@ export default function Login() {
           <div className="hidden md:flex flex-col items-center text-center p-8 bg-card/10 border border-line/20 rounded-3xl backdrop-blur-md shadow-2xl relative">
             <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent pointer-events-none rounded-3xl" />
             <div className="mb-6 relative z-10">
-              <h2 className="font-display text-2xl lg:text-3xl font-extrabold text-ink leading-tight uppercase tracking-wider">
-                Online Assessments
+              <h2 className="font-display text-2xl lg:text-3xl font-extrabold leading-tight uppercase tracking-wider">
+                <ShinyText text="Online Assessments" speed={3.5} color="var(--color-ink)" shineColor="var(--color-accent)" />
               </h2>
-              <h3 className="font-display text-xl lg:text-2xl font-bold text-accent mt-1 uppercase tracking-widest">
-                Are Now Simple
+              <h3 className="font-display text-xl lg:text-2xl font-bold mt-1 uppercase tracking-widest">
+                <ShinyText text="Are Now Simple" speed={3.5} color="var(--color-accent)" shineColor="var(--color-ink)" />
               </h3>
             </div>
 
@@ -112,8 +113,8 @@ export default function Login() {
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-accent-deep via-accent to-success" />
               
               <div className="text-center mb-8">
-                <h1 className="font-display text-3xl font-extrabold text-ink tracking-tight">
-                  Welcome
+                <h1 className="font-display text-3xl font-extrabold tracking-tight">
+                  <ShinyText text="Welcome" speed={3.5} color="var(--color-ink)" shineColor="var(--color-accent)" />
                 </h1>
                 <p className="text-ink-secondary text-xs mt-2 uppercase tracking-wider font-semibold">
                   Access your assessment dashboard

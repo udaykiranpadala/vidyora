@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authApi } from "../api/auth";
 import Navbar from "../components/Navbar";
+import ShinyText from "../components/ShinyText";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -92,8 +93,8 @@ export default function ForgotPassword() {
           {step === 1 && (
             <div>
               <div className="text-center mb-8">
-                <h1 className="font-display text-3xl font-extrabold text-ink tracking-tight">
-                  Reset Password
+                <h1 className="font-display text-3xl font-extrabold tracking-tight">
+                  <ShinyText text="Reset Password" speed={3.5} color="var(--color-ink)" shineColor="var(--color-accent)" />
                 </h1>
                 <p className="text-ink-secondary text-xs mt-2 uppercase tracking-wider font-semibold">
                   Send OTP to registered email
@@ -154,8 +155,8 @@ export default function ForgotPassword() {
           {step === 2 && (
             <div>
               <div className="text-center mb-8">
-                <h1 className="font-display text-3xl font-extrabold text-ink tracking-tight">
-                  Enter Reset Code
+                <h1 className="font-display text-3xl font-extrabold tracking-tight">
+                  <ShinyText text="Enter Reset Code" speed={3.5} color="var(--color-ink)" shineColor="var(--color-accent)" />
                 </h1>
                 <p className="text-ink-secondary text-xs mt-2 uppercase tracking-wider font-semibold">
                   Check code sent to {email}
@@ -259,8 +260,8 @@ export default function ForgotPassword() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="font-display text-3xl font-extrabold text-ink tracking-tight mb-2">
-                All Done!
+              <h1 className="font-display text-3xl font-extrabold tracking-tight mb-2">
+                <ShinyText text="All Done!" speed={3.5} color="var(--color-ink)" shineColor="var(--color-accent)" />
               </h1>
               <p className="text-ink-secondary text-sm leading-relaxed mb-8">
                 Your password has been successfully updated. You can now use it to log in to your organizer dashboard.
