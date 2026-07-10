@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import api from "./api/client";
 import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -14,6 +16,11 @@ import ExamComplete from "./pages/ExamComplete";
 import Leaderboard from "./pages/Leaderboard";
 
 function App() {
+  useEffect(() => {
+    // Ping backend in background to warm it up (wake up from potential cold start)
+    api.get("/health").catch(() => {});
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>

@@ -144,7 +144,7 @@ export const getQuestionForAttempt = async (req, res) => {
     if (exam && exam.endAt && new Date() > new Date(exam.endAt)) {
       attempt.status = "completed";
       attempt.completedAt = new Date();
-      await attempt.save();
+      await attempt.save({ validateBeforeSave: false });
       return res.status(403).json({ message: "This exam has ended" });
     }
 
@@ -364,7 +364,7 @@ export const submitAnswer = async (req, res) => {
       attempt.totalTimeSeconds += (timeTakenSeconds || 0);
     }
 
-    await attempt.save();
+    await attempt.save({ validateBeforeSave: false });
 
     res.json({ 
       message: "Answer recorded successfully", 
@@ -421,7 +421,7 @@ export const logCheatEvent = async (req, res) => {
     if (exam && exam.endAt && new Date() > new Date(exam.endAt)) {
       attempt.status = "completed";
       attempt.completedAt = new Date();
-      await attempt.save();
+      await attempt.save({ validateBeforeSave: false });
       return res.status(403).json({ message: "Attempt not available (Exam has ended)" });
     }
 
@@ -439,7 +439,7 @@ export const logCheatEvent = async (req, res) => {
       autoSubmitted = true;
     }
 
-    await attempt.save();
+    await attempt.save({ validateBeforeSave: false });
 
     res.json({ 
       message: "Security violation logged", 
@@ -518,7 +518,7 @@ export const startAttempt = async (req, res) => {
     // Initialize startedAt if not set yet
     if (!attempt.startedAt) {
       attempt.startedAt = new Date();
-      await attempt.save();
+      await attempt.save({ validateBeforeSave: false });
     }
 
     res.json({ message: "Attempt started", startedAt: attempt.startedAt });

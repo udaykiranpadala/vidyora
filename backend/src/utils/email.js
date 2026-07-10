@@ -42,6 +42,7 @@ export const sendOtpEmail = async (toEmail, otp) => {
         "Content-Type": "application/json",
         "accept": "application/json",
       },
+      timeout: 5000,
     }
   );
 };
@@ -67,6 +68,7 @@ export const sendResetOtpEmail = async (toEmail, otp) => {
         "Content-Type": "application/json",
         "accept": "application/json",
       },
+      timeout: 5000,
     }
   );
 };
