@@ -154,19 +154,24 @@ export const getQuestionForAttempt = async (req, res) => {
 
     const idx = parseInt(index, 10);
 
-    // Optimize: Fetch only the specific question by order, plus lightweight metadata for all questions
-    const [currentQuestion, allQuestions, totalQuestionsCount] = await Promise.all([
-      Question.findOne({ exam: attempt.exam, order: idx }),
-      Question.find({ exam: attempt.exam })
-        .select("_id type title order totalPoints timerSeconds")
-        .sort({ order: 1 })
-        .lean(),
-      Question.countDocuments({ exam: attempt.exam })
-    ]);
+    // Fetch all questions for this exam sorted by order
+    const allQuestionsFull = await Question.find({ exam: attempt.exam }).sort({ order: 1 });
+    const totalQuestionsCount = allQuestionsFull.length;
+    const currentQuestion = allQuestionsFull[idx];
 
     if (!currentQuestion) {
       return res.status(404).json({ message: "Question not found" });
     }
+
+    // Map to lightweight metadata for the sidebar question navigator
+    const allQuestions = allQuestionsFull.map(q => ({
+      _id: q._id,
+      type: q.type,
+      title: q.title,
+      order: q.order,
+      totalPoints: q.totalPoints,
+      timerSeconds: q.timerSeconds
+    }));
 
     res.json({
       question: sanitizeQuestionForCandidate(currentQuestion),
