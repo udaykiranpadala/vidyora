@@ -25,6 +25,7 @@ export default function Dashboard() {
 
   // Core Data State
   const [exams, setExams] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all"); // "all" | "draft" | "published" | "closed"
   const [selectedBatch, setSelectedBatch] = useState("All Batches");
