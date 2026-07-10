@@ -176,7 +176,9 @@ export const getQuestionForAttempt = async (req, res) => {
       startedAt: attempt.startedAt,
       endAt: exam?.endAt,
       questionList: allQuestions,
-      questionRemainingTimes: attempt.questionRemainingTimes ? Object.fromEntries(attempt.questionRemainingTimes) : {},
+      questionRemainingTimes: (attempt.questionRemainingTimes instanceof Map)
+        ? Object.fromEntries(attempt.questionRemainingTimes)
+        : (attempt.questionRemainingTimes || {}),
       answers: attempt.answers.map((a) => ({
         question: a.question,
         type: a.type,

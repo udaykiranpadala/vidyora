@@ -748,6 +748,18 @@ export default function ExamAttempt() {
     );
   }
 
+  if (!isLobby && !question) {
+    return (
+      <div className="min-h-screen bg-paper flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center text-danger px-4 text-center">
+          <span className="text-3xl mb-4">⚠️</span>
+          <p className="font-semibold text-lg">No question details available. Please contact your organizer or refresh the page.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Format countdown string
   const formatTime = (secs) => {
     const h = Math.floor(secs / 3600);
