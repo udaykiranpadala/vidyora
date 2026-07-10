@@ -56,6 +56,7 @@ export default function ExamAttempt() {
   const [answers, setAnswers] = useState([]); // Array of existing answers
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [startedAt, setStartedAt] = useState(null);
   const [globalTimeLeft, setGlobalTimeLeft] = useState(3600); // seconds left
 
   // Lobby States
