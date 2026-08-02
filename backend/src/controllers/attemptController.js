@@ -117,14 +117,21 @@ const sanitizeQuestionForCandidate = (question) => {
     };
   }
 
-  // coding - only expose non-hidden (sample) test cases, never the hidden ones
+  const langs = (question.allowedLanguages && question.allowedLanguages.length > 0)
+    ? question.allowedLanguages
+    : ["python", "cpp", "c", "java", "javascript"];
+
+  const sampleCases = (question.testCases || []).filter((tc) => !tc.isHidden);
+  const sampleTestCasesToExpose = sampleCases.length > 0
+    ? sampleCases
+    : (question.testCases?.length > 0 ? [question.testCases[0]] : []);
+
+  // coding - expose non-hidden sample test cases, or fallback to first testcase
   return {
     ...base,
-    allowedLanguages: question.allowedLanguages,
-    starterCode: question.starterCode,
-    sampleTestCases: question.testCases
-      .filter((tc) => !tc.isHidden)
-      .map((tc) => ({ input: tc.input, expectedOutput: tc.expectedOutput, points: tc.points })),
+    allowedLanguages: langs,
+    starterCode: question.starterCode || {},
+    sampleTestCases: sampleTestCasesToExpose.map((tc) => ({ input: tc.input || "", expectedOutput: tc.expectedOutput || "", points: tc.points || 0 })),
   };
 };
 
@@ -202,6 +209,14 @@ export const getQuestionForAttempt = async (req, res) => {
   }
 };
 
+const normalizeLangName = (lang) => {
+  const l = (lang || "").toLowerCase().trim();
+  if (l === "c++" || l === "cpp17" || l === "cpp20") return "cpp";
+  if (l === "py" || l === "python3") return "python";
+  if (l === "js" || l === "node") return "javascript";
+  return l;
+};
+
 // Run code against SAMPLE test cases only (instant feedback, not graded)
 export const runCode = async (req, res) => {
   try {
@@ -217,12 +232,22 @@ export const runCode = async (req, res) => {
     if (!question || question.type !== "coding") {
       return res.status(404).json({ message: "Coding question not found" });
     }
-    if (!question.allowedLanguages.includes(language)) {
-      return res.status(400).json({ message: "Language not allowed for this question" });
-    }
+
+    const availableLangs = (question.allowedLanguages && question.allowedLanguages.length > 0)
+      ? question.allowedLanguages
+      : ["python", "cpp", "c", "java", "javascript"];
+
+    const selectedLang = language || availableLangs[0] || "python";
+    const allowed = availableLangs.map(normalizeLangName);
+    const targetLang = normalizeLangName(selectedLang);
+
+    // Fallback to first available language if candidate language is not explicitly listed
+    const activeLanguage = (allowed.length === 0 || allowed.includes(targetLang) || allowed.includes("all"))
+      ? selectedLang
+      : availableLangs[0];
 
     let testCasesToRun;
-    if (customInput !== undefined) {
+    if (customInput !== undefined && customInput !== null) {
       testCasesToRun = [{
         input: customInput,
         expectedOutput: "",
@@ -230,25 +255,30 @@ export const runCode = async (req, res) => {
         isHidden: false
       }];
     } else {
-      testCasesToRun = question.testCases.filter((tc) => !tc.isHidden);
+      testCasesToRun = (question.testCases || []).filter((tc) => !tc.isHidden);
+      if (testCasesToRun.length === 0 && question.testCases && question.testCases.length > 0) {
+        testCasesToRun = [question.testCases[0]];
+      }
     }
 
     if (testCasesToRun.length === 0) {
-      return res.json({ results: [], message: "No sample test cases to run against" });
+      return res.json({ results: [], message: "No test cases configured for this question." });
     }
 
     let results;
+    let compileError = null;
     try {
-      const runRes = await runAgainstTestCases(code, language, testCasesToRun);
+      const runRes = await runAgainstTestCases(code || "", activeLanguage, testCasesToRun);
       results = runRes.results;
+      compileError = runRes.compileError;
     } catch (err) {
-      console.warn("Judge0 service error:", err.message);
-      return res.status(503).json({
-        message: err.message || "Code execution service unavailable. Please try again later.",
+      console.warn("Judge0 execution warning:", err.message);
+      return res.status(400).json({
+        message: err.message || "Code execution failed.",
       });
     }
 
-    res.json({ results });
+    res.json({ results, compileError });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to run code. Check your execution parameters." });

@@ -111,5 +111,7 @@ const exam = new mongoose.Schema(
   { timestamps: true }
 );
 
+exam.index({ organizer: 1, createdAt: -1 });
+
 const Exam = mongoose.model("Exam", exam);
 export default Exam;

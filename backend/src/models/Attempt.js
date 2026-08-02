@@ -95,5 +95,7 @@ const attemptSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+attemptSchema.index({ exam: 1, status: 1 });
+
 const Attempt = mongoose.model("Attempt", attemptSchema);
 export default Attempt;

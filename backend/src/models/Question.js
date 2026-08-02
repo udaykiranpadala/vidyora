@@ -48,8 +48,7 @@ const questionSchema = new mongoose.Schema(
     // ---- Coding-specific fields ----
     allowedLanguages: {
       type: [String],
-      enum: ["c", "cpp", "java", "python"],
-      default: [],
+      default: ["c", "cpp", "java", "python", "javascript"],
     },
     starterCode: {
       // map of language -> boilerplate code, e.g. { python: "...", java: "..." }
@@ -74,6 +73,8 @@ const questionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+questionSchema.index({ exam: 1, order: 1 });
 
 const Question = mongoose.model("Question", questionSchema);
 export default Question;

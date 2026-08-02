@@ -593,13 +593,14 @@ export default function ExamAttempt() {
     setRunResults(null);
     setSelectedTestCaseIdx(0);
     try {
+      const activeLang = language || question.allowedLanguages?.[0] || "python";
       const res = await attemptApi.runCode(attemptId, {
         questionId: question._id,
-        code,
-        language,
+        code: code || "",
+        language: activeLang,
         customInput: enableCustomInput ? customInput : undefined
       });
-      setRunResults(res.data.results);
+      setRunResults(res.data.results || []);
     } catch (err) {
       const errMsg = err.response?.data?.message || 
         "Could not execute code: Code execution service (backend/Judge0 CE/Docker) is unavailable or offline. Please check system status.";

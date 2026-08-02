@@ -41,14 +41,35 @@ export const getMyExams = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Attach a quick question count and attempt count to each, useful for dashboard cards
-    const examsWithCounts = await Promise.all(
-      exams.map(async (exam) => {
-        const questionCount = await Question.countDocuments({ exam: exam._id });
-        const attemptCount = await Attempt.countDocuments({ exam: exam._id });
-        return { ...exam, questionCount, attemptCount };
-      })
+    if (exams.length === 0) {
+      return res.json({ exams: [] });
+    }
+
+    const examIds = exams.map((e) => e._id);
+
+    const [questionCounts, attemptCounts] = await Promise.all([
+      Question.aggregate([
+        { $match: { exam: { $in: examIds } } },
+        { $group: { _id: "$exam", count: { $sum: 1 } } },
+      ]),
+      Attempt.aggregate([
+        { $match: { exam: { $in: examIds } } },
+        { $group: { _id: "$exam", count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const qMap = Object.fromEntries(
+      questionCounts.map((q) => [q._id.toString(), q.count])
     );
+    const aMap = Object.fromEntries(
+      attemptCounts.map((a) => [a._id.toString(), a.count])
+    );
+
+    const examsWithCounts = exams.map((exam) => ({
+      ...exam,
+      questionCount: qMap[exam._id.toString()] || 0,
+      attemptCount: aMap[exam._id.toString()] || 0,
+    }));
 
     res.json({ exams: examsWithCounts });
   } catch (err) {

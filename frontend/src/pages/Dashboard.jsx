@@ -23,9 +23,16 @@ export default function Dashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Core Data State
-  const [exams, setExams] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // Core Data State (Stale-While-Revalidate pattern for instant 0ms load)
+  const [exams, setExams] = useState(() => {
+    try {
+      const cached = localStorage.getItem("vidyora_cached_exams");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => exams.length === 0);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all"); // "all" | "draft" | "published" | "closed"
   const [selectedBatch, setSelectedBatch] = useState("All Batches");
@@ -42,7 +49,13 @@ export default function Dashboard() {
   const [shareTarget, setShareTarget] = useState(null);
 
   // Selected Exam for detailed view drilldown
-  const [selectedExamId, setSelectedExamId] = useState("");
+  const [selectedExamId, setSelectedExamId] = useState(() => {
+    if (exams.length > 0) {
+      const firstPub = exams.find(e => e.isPublished);
+      return firstPub ? firstPub._id : exams[0]._id;
+    }
+    return "";
+  });
   const [drillDownResults, setDrillDownResults] = useState(null);
   const [drillDownLoading, setDrillDownLoading] = useState(false);
 
@@ -55,14 +68,19 @@ export default function Dashboard() {
 
   const searchInputRef = useRef(null);
 
-  const loadExams = async () => {
-    setLoading(true);
+  const loadExams = async (showSpinner = false) => {
+    if (showSpinner && exams.length === 0) setLoading(true);
     try {
       const res = await examApi.list();
-      setExams(res.data.exams);
-      if (res.data.exams.length > 0) {
-        const firstPub = res.data.exams.find(e => e.isPublished);
-        setSelectedExamId(firstPub ? firstPub._id : res.data.exams[0]._id);
+      const fetchedExams = res.data.exams || [];
+      setExams(fetchedExams);
+      try {
+        localStorage.setItem("vidyora_cached_exams", JSON.stringify(fetchedExams));
+      } catch (_) {}
+
+      if (fetchedExams.length > 0 && !selectedExamId) {
+        const firstPub = fetchedExams.find((e) => e.isPublished);
+        setSelectedExamId(firstPub ? firstPub._id : fetchedExams[0]._id);
       }
     } catch (err) {
       console.error("Failed to load exams:", err);
@@ -72,7 +90,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadExams();
+    loadExams(exams.length === 0);
   }, []);
 
   // Outer click handler to dismiss menus
@@ -86,15 +104,15 @@ export default function Dashboard() {
     return () => window.removeEventListener("click", handleOuterClick);
   }, []);
 
-  // Fetch drilldown for detailed tabs
+  // Fetch drilldown for detailed tabs (only when user views reports or students tab)
   useEffect(() => {
-    if (!selectedExamId) return;
+    if (!selectedExamId || (activeTab !== "reports" && activeTab !== "students")) return;
     setDrillDownLoading(true);
     examApi.getResults(selectedExamId)
       .then((res) => setDrillDownResults(res.data))
       .catch((err) => console.error("Drill-down results error:", err))
       .finally(() => setDrillDownLoading(false));
-  }, [selectedExamId]);
+  }, [selectedExamId, activeTab]);
 
   const statusOf = (exam) => {
     if (exam.isClosed || (exam.endAt && new Date(exam.endAt) < new Date())) return "closed";
