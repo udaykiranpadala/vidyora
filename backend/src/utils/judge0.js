@@ -212,34 +212,46 @@ export const runAgainstTestCases = async (sourceCode, language, testCases) => {
     postRes = await axios.post(
       `${apiUrl}/submissions/batch?base64_encoded=true`,
       { submissions },
-      { headers: judge0Headers, timeout: 12000 }
+      { headers: judge0Headers, timeout: 5000 }
     );
   } catch (err) {
-    // If localhost failed, try 127.0.0.1 explicit IPv4 fallback
+    // Fallback 1: If localhost failed, try 127.0.0.1
     if (apiUrl.includes("localhost")) {
       const fallbackUrl = apiUrl.replace("localhost", "127.0.0.1");
       try {
         postRes = await axios.post(
           `${fallbackUrl}/submissions/batch?base64_encoded=true`,
           { submissions },
-          { headers: judge0Headers, timeout: 12000 }
+          { headers: judge0Headers, timeout: 3000 }
         );
         activeApiUrl = fallbackUrl;
       } catch (err2) {
-        console.warn("Judge0 submission failed on localhost/127.0.0.1. Trying Piston Cloud API...");
+        // Fallback 2: Public Judge0 Cloud Engine (ce.judge0.com) - Full support for C, C++, Java, Python, JS
+        console.warn("Local Judge0 unreachable. Switching to Public Judge0 Cloud Engine (ce.judge0.com)...");
+        activeApiUrl = "https://ce.judge0.com";
         try {
-          return await runPistonFallback(sourceCode, language, testCases);
-        } catch (pistonErr) {
-          console.warn("Piston API failed, trying local process fallback...", pistonErr.message);
+          postRes = await axios.post(
+            `https://ce.judge0.com/submissions/batch?base64_encoded=true`,
+            { submissions },
+            { headers: { "Content-Type": "application/json" }, timeout: 15000 }
+          );
+        } catch (cloudErr) {
+          console.warn("Public Judge0 failed, attempting local process fallback...", cloudErr.message);
           return await runLocallyFallback(sourceCode, language, testCases);
         }
       }
     } else {
-      console.warn("Judge0 API failed/unreachable. Trying Piston Cloud API...", err.message);
+      // Fallback 2 for custom API URL failure: Public Judge0 Cloud Engine
+      console.warn("Custom Judge0 API unreachable. Switching to Public Judge0 Cloud Engine (ce.judge0.com)...", err.message);
+      activeApiUrl = "https://ce.judge0.com";
       try {
-        return await runPistonFallback(sourceCode, language, testCases);
-      } catch (pistonErr) {
-        console.warn("Piston API failed, trying local process fallback...", pistonErr.message);
+        postRes = await axios.post(
+          `https://ce.judge0.com/submissions/batch?base64_encoded=true`,
+          { submissions },
+          { headers: { "Content-Type": "application/json" }, timeout: 15000 }
+        );
+      } catch (cloudErr) {
+        console.warn("Public Judge0 failed, attempting local process fallback...", cloudErr.message);
         return await runLocallyFallback(sourceCode, language, testCases);
       }
     }
