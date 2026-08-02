@@ -381,17 +381,42 @@ export default function ExamAttempt() {
   const handleEditorMount = (editor) => {
     editorRef.current = editor;
 
-    // Zoom keyboard shortcuts inside Monaco
+    // Zoom & Anti-Cheat keyboard shortcuts inside Monaco Editor
     editor.onKeyDown((e) => {
-      if (e.ctrlKey || e.metaKey) {
-        if (e.browserEvent?.key === "+" || e.browserEvent?.key === "=") {
+      const browserEvt = e.browserEvent;
+      const key = (browserEvt?.key || "").toLowerCase();
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+
+      if (isCmdOrCtrl) {
+        if (key === "c") {
+          e.preventDefault();
+          e.stopPropagation();
+          triggerAntiCheatWarning("copy_attempt", "Security Alert: Copying text (Ctrl+C) is strictly prohibited during the assessment.");
+          return;
+        }
+        if (key === "v") {
+          e.preventDefault();
+          e.stopPropagation();
+          triggerAntiCheatWarning("paste_attempt", "Security Alert: Pasting text (Ctrl+V) is strictly prohibited during the assessment.");
+          return;
+        }
+        if (key === "x") {
+          e.preventDefault();
+          e.stopPropagation();
+          triggerAntiCheatWarning("cut_attempt", "Security Alert: Cutting text (Ctrl+X) is strictly prohibited during the assessment.");
+          return;
+        }
+        if (key === "+" || key === "=") {
           e.preventDefault();
           e.stopPropagation();
           setEditorFontSize((prev) => Math.min(30, prev + 1));
-        } else if (e.browserEvent?.key === "-") {
+          return;
+        }
+        if (key === "-") {
           e.preventDefault();
           e.stopPropagation();
           setEditorFontSize((prev) => Math.max(10, prev - 1));
+          return;
         }
       }
     });
@@ -409,7 +434,7 @@ export default function ExamAttempt() {
       }
     });
 
-    // Block paste if anti-cheat is enabled
+    // Block paste fallback inside Monaco
     editor.onDidPaste(() => {
       editor.trigger("source", "undo");
       triggerAntiCheatWarning("paste_attempt", "Security Notice: Pasting content inside the code editor is strictly prohibited.");
@@ -687,7 +712,7 @@ export default function ExamAttempt() {
     };
   }, [loading, settings.enableFullScreen, triggerAntiCheatWarning, fullscreenExited]);
 
-  // ── EFFECT 2: Copy / Paste / Right-click protection — ALWAYS ON during exam ──
+  // ── EFFECT 2: Copy / Paste / Cut / Right-click protection — ALWAYS ON during exam ──
   useEffect(() => {
     if (loading) return;
 
@@ -696,43 +721,61 @@ export default function ExamAttempt() {
       e.preventDefault();
     };
 
-    // Block copy/paste/cut/select-all keyboard shortcuts
+    // Block copy/paste/cut/select-all keyboard shortcuts globally
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+      const key = (e.key || "").toLowerCase();
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+
+      if (isCmdOrCtrl && key === "c") {
         e.preventDefault();
-        triggerAntiCheatWarning("paste_attempt", "Copying is strictly prohibited during the assessment.");
+        e.stopPropagation();
+        triggerAntiCheatWarning("copy_attempt", "Security Alert: Copying text (Ctrl+C) is strictly prohibited during the assessment.");
         return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+      if (isCmdOrCtrl && key === "v") {
         e.preventDefault();
-        triggerAntiCheatWarning("paste_attempt", "Pasting external content is strictly prohibited during the assessment.");
+        e.stopPropagation();
+        triggerAntiCheatWarning("paste_attempt", "Security Alert: Pasting text (Ctrl+V) is strictly prohibited during the assessment.");
         return;
       }
-      if ((e.ctrlKey || e.metaKey) && (e.key === "x" || e.key === "a")) {
+      if (isCmdOrCtrl && key === "x") {
         e.preventDefault();
+        e.stopPropagation();
+        triggerAntiCheatWarning("cut_attempt", "Security Alert: Cutting text (Ctrl+X) is strictly prohibited during the assessment.");
+        return;
+      }
+      if (isCmdOrCtrl && key === "a") {
+        e.preventDefault();
+        e.stopPropagation();
         return;
       }
       if (e.key === "PrintScreen") {
         e.preventDefault();
+        triggerAntiCheatWarning("fullscreen_exit", "Security Alert: Taking screenshots is prohibited during the assessment.");
         return;
       }
     };
 
-    // Block copy/cut events at the document level
-    const blockClipboard = (e) => {
+    // Block copy/cut/paste events at the document level & trigger security warning
+    const handleClipboardAction = (e) => {
       e.preventDefault();
+      const type = e.type === "copy" ? "copy_attempt" : e.type === "cut" ? "cut_attempt" : "paste_attempt";
+      const actionName = e.type.toUpperCase();
+      triggerAntiCheatWarning(type, `Security Alert: ${actionName} operation is strictly prohibited during the assessment.`);
     };
 
     document.addEventListener("contextmenu", handleContextMenu);
-    document.addEventListener("copy", blockClipboard);
-    document.addEventListener("cut", blockClipboard);
-    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("copy", handleClipboardAction);
+    document.addEventListener("cut", handleClipboardAction);
+    document.addEventListener("paste", handleClipboardAction);
+    window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
       document.removeEventListener("contextmenu", handleContextMenu);
-      document.removeEventListener("copy", blockClipboard);
-      document.removeEventListener("cut", blockClipboard);
-      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("copy", handleClipboardAction);
+      document.removeEventListener("cut", handleClipboardAction);
+      document.removeEventListener("paste", handleClipboardAction);
+      window.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [loading, triggerAntiCheatWarning]);
 

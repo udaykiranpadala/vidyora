@@ -443,6 +443,8 @@ export const logCheatEvent = async (req, res) => {
       tab_switch: "tabSwitchCount",
       fullscreen_exit: "fullscreenExitCount",
       paste_attempt: "pasteAttemptCount",
+      copy_attempt: "pasteAttemptCount",
+      cut_attempt: "pasteAttemptCount",
     };
     const field = fieldMap[eventType];
     if (!field) {
