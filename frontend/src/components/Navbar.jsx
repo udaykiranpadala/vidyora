@@ -31,6 +31,8 @@ export default function Navbar() {
         { to: "/join", label: "Join Exam" },
       ];
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/95 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
@@ -62,7 +64,7 @@ export default function Navbar() {
                 e.stopPropagation();
                 setThemeDropdownOpen(!themeDropdownOpen);
               }}
-              className="px-3.5 py-1.5 border border-line bg-card hover:bg-line/10 rounded-full flex items-center gap-1.5 text-ink-secondary hover:text-ink relative transition-colors cursor-pointer text-xs font-semibold"
+              className="px-3 py-1.5 border border-line bg-card hover:bg-line/10 rounded-full flex items-center gap-1 text-ink-secondary hover:text-ink relative transition-colors cursor-pointer text-xs font-semibold"
               title="Switch Theme"
             >
               <span>Theme: <span className="capitalize text-accent font-bold">{themeLabel[theme] || theme}</span></span>
@@ -100,14 +102,14 @@ export default function Navbar() {
           {organizer ? (
             <UserMenu />
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Link to="/login">
-                <Button variant="ghost" className="px-3.5 py-2 text-sm">Log in</Button>
+                <Button variant="ghost" className="px-3 py-1.5 text-xs">Log in</Button>
               </Link>
               <Link to="/signup">
                 <Button 
                   variant="primary" 
-                  className="px-3.5 py-2 text-sm !bg-[#194AC6] hover:!bg-[#153BA0] active:scale-95 transition-all"
+                  className="px-3 py-1.5 text-xs !bg-[#194AC6] hover:!bg-[#153BA0] active:scale-95 transition-all"
                   glowColor="25, 74, 198"
                 >
                   Sign up
@@ -115,8 +117,53 @@ export default function Navbar() {
               </Link>
             </div>
           )}
+
+          {/* Mobile Hamburger Menu Toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg border border-line bg-card text-ink-secondary hover:text-ink"
+            aria-label="Toggle Navigation Menu"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown Panel */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-line bg-surface p-4 flex flex-col gap-3">
+          {!isAuthPage && navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`text-sm font-medium py-1.5 transition-colors ${
+                location.pathname === link.to ? "text-accent font-bold" : "text-ink-secondary"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          {!organizer && (
+            <div className="flex flex-col gap-2 pt-2 border-t border-line">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="secondary" className="w-full py-2 text-xs font-semibold">Log in</Button>
+              </Link>
+              <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="primary" className="w-full py-2 text-xs font-semibold !bg-[#194AC6]">Sign up</Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 }

@@ -86,6 +86,9 @@ export default function ExamAttempt() {
   const [editorFontSize, setEditorFontSize] = useState(14);
   const [wordWrap, setWordWrap] = useState("on");
   const [editorFullscreen, setEditorFullscreen] = useState(false);
+  const [showMobileMap, setShowMobileMap] = useState(false);
+  const [mobileCodingTab, setMobileCodingTab] = useState("problem"); // "problem" | "editor" | "console"
+  const [useSimpleEditor, setUseSimpleEditor] = useState(false);
 
   const { theme } = useTheme();
 
@@ -972,6 +975,22 @@ export default function ExamAttempt() {
               </p>
             </div>
           </div>
+
+          {/* Mobile Question Map Button */}
+          {!settings.singleQuestionMode && (
+            <button
+              type="button"
+              onClick={() => setShowMobileMap(true)}
+              className="lg:hidden px-2.5 py-1.5 border border-line bg-card hover:bg-line/20 rounded-xl text-xs font-semibold font-mono text-ink flex items-center gap-1.5 cursor-pointer"
+              title="Open Question Map"
+            >
+              <span>🗺️</span>
+              <span className="text-[10px] bg-accent-soft text-accent px-1.5 py-0.5 rounded-full font-bold">
+                Q.{questionIndex + 1}
+              </span>
+            </button>
+          )}
+
           <div className="h-6 w-[1px] bg-line hidden sm:block"></div>
           <ThemeToggle />
         </div>
@@ -1098,7 +1117,7 @@ export default function ExamAttempt() {
         <div className="flex-1 flex overflow-hidden">
           {/* Left Question Navigator */}
           {!settings.singleQuestionMode && (
-            <aside className="w-64 border-r border-line bg-surface flex flex-col shrink-0 overflow-y-auto">
+            <aside className="hidden lg:flex lg:w-64 border-r border-line bg-surface flex-col shrink-0 overflow-y-auto">
               {settings.showQuestionNumbers && (
                 <div className="p-4 border-b border-line">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-ink-secondary mb-3">Question Map</h2>
@@ -1345,8 +1364,47 @@ export default function ExamAttempt() {
             // Coding View Layout
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
               
+              {/* Mobile View Mode Tabs */}
+              <div className="lg:hidden flex items-center border-b border-line bg-surface px-3 py-1.5 gap-1.5 shrink-0 overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setMobileCodingTab("problem")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    mobileCodingTab === "problem"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-ink-secondary hover:text-ink hover:bg-card"
+                  }`}
+                >
+                  📋 Problem
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileCodingTab("editor")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    mobileCodingTab === "editor"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-ink-secondary hover:text-ink hover:bg-card"
+                  }`}
+                >
+                  💻 Code Editor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileCodingTab("console")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    mobileCodingTab === "console"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-ink-secondary hover:text-ink hover:bg-card"
+                  }`}
+                >
+                  🧪 Console & Run
+                </button>
+              </div>
+
               {/* Left Column: Problem details */}
-              <div className="w-full lg:w-1/2 border-r border-line bg-surface flex flex-col overflow-y-auto p-6">
+              <div className={`w-full lg:w-1/2 border-r border-line bg-surface flex flex-col overflow-y-auto p-6 ${
+                mobileCodingTab === "problem" ? "flex" : "hidden lg:flex"
+              }`}>
                 {isQuestionTimeExpired && (
                   <div className="mb-4 p-3 bg-danger/10 border border-danger/25 text-danger text-xs font-semibold rounded-xl flex items-center gap-2">
                     <span>⚠️</span>
@@ -1378,11 +1436,13 @@ export default function ExamAttempt() {
               </div>
 
               {/* Right Column: Code Editor & Console */}
-              <div className="w-full lg:w-1/2 flex flex-col overflow-hidden bg-card">
+              <div className={`w-full lg:w-1/2 flex flex-col overflow-hidden bg-card ${
+                mobileCodingTab !== "problem" ? "flex" : "hidden lg:flex"
+              }`}>
                 
                 {/* Editor Header Toolbar */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-line bg-surface shrink-0">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-line bg-surface shrink-0 flex-wrap gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
@@ -1400,7 +1460,7 @@ export default function ExamAttempt() {
                         type="button"
                         onClick={() => setEditorFontSize((prev) => Math.max(10, prev - 1))}
                         className="w-6 h-6 flex items-center justify-center text-xs font-bold text-ink-secondary hover:text-ink hover:bg-line/20 rounded cursor-pointer"
-                        title="Zoom Out (Ctrl + '-')"
+                        title="Zoom Out"
                       >
                         A-
                       </button>
@@ -1409,7 +1469,7 @@ export default function ExamAttempt() {
                         type="button"
                         onClick={() => setEditorFontSize((prev) => Math.min(30, prev + 1))}
                         className="w-6 h-6 flex items-center justify-center text-xs font-bold text-ink-secondary hover:text-ink hover:bg-line/20 rounded cursor-pointer"
-                        title="Zoom In (Ctrl + '+')"
+                        title="Zoom In"
                       >
                         A+
                       </button>
@@ -1425,7 +1485,16 @@ export default function ExamAttempt() {
                     </button>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUseSimpleEditor(!useSimpleEditor)}
+                      className="px-2 py-1 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card flex items-center gap-1"
+                      title="Switch between Monaco and Simple Textarea Editor"
+                    >
+                      <span>{useSimpleEditor ? "⚡ Monaco" : "📝 Text Editor"}</span>
+                    </button>
+
                     <button
                       onClick={() => {
                         if (markedQuestions.has(question._id)) {
@@ -1442,22 +1511,24 @@ export default function ExamAttempt() {
                           });
                         }
                       }}
-                      className="p-1.5 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card"
+                      className="p-1.5 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card hidden sm:block"
                       title="Mark question for review"
                     >
                       {markedQuestions.has(question._id) ? "Marked" : "Mark"}
                     </button>
                     <button
                       onClick={toggleEditorFullscreen}
-                      className="p-1.5 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card"
+                      className="p-1.5 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card hidden sm:block"
                     >
                       {editorFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                     </button>
                   </div>
                 </div>
 
-                {/* Monaco Editor Canvas */}
-                <div className={`flex-1 relative ${editorFullscreen ? "fixed inset-0 z-50 bg-paper flex flex-col" : ""}`}>
+                {/* Monaco / Simple Editor Area */}
+                <div className={`flex-1 relative min-h-[220px] ${
+                  mobileCodingTab === "console" ? "hidden lg:block" : "block"
+                } ${editorFullscreen ? "fixed inset-0 z-50 bg-paper flex flex-col" : ""}`}>
                   {editorFullscreen && (
                     <div className="flex justify-between items-center px-4 py-2 border-b border-line bg-surface">
                       <span className="text-xs font-mono font-semibold">
@@ -1466,29 +1537,48 @@ export default function ExamAttempt() {
                       <Button variant="secondary" onClick={toggleEditorFullscreen} className="px-3 py-1 text-xs">Exit Fullscreen</Button>
                     </div>
                   )}
-                  <Editor
-                    height="100%"
-                    language={MONACO_LANG_MAP[language] || "plaintext"}
-                    value={code}
-                    onChange={(val) => {
-                      setCode(val ?? "");
-                      saveLocalBackup(val ?? "", null, []);
-                    }}
-                    onMount={handleEditorMount}
-                    theme={editorTheme}
-                    options={{
-                      fontSize: editorFontSize,
-                      minimap: { enabled: false },
-                      scrollBeyondLastLine: false,
-                      wordWrap: wordWrap,
-                      automaticLayout: true,
-                      readOnly: isQuestionTimeExpired,
-                    }}
-                  />
+
+                  {useSimpleEditor ? (
+                    <textarea
+                      value={code}
+                      onChange={(e) => {
+                        setCode(e.target.value);
+                        saveLocalBackup(e.target.value, null, []);
+                      }}
+                      readOnly={isQuestionTimeExpired}
+                      placeholder="// Write code here..."
+                      spellCheck={false}
+                      className="w-full h-full p-4 font-mono text-xs bg-paper text-ink border-0 outline-none resize-none leading-relaxed"
+                      style={{ fontSize: `${editorFontSize}px` }}
+                    />
+                  ) : (
+                    <Editor
+                      height="100%"
+                      language={MONACO_LANG_MAP[language] || "plaintext"}
+                      value={code}
+                      onChange={(val) => {
+                        setCode(val ?? "");
+                        saveLocalBackup(val ?? "", null, []);
+                      }}
+                      onMount={handleEditorMount}
+                      theme={editorTheme}
+                      options={{
+                        fontSize: editorFontSize,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        wordWrap: wordWrap,
+                        automaticLayout: true,
+                        readOnly: isQuestionTimeExpired,
+                        fixedOverflowWidgets: true,
+                      }}
+                    />
+                  )}
                 </div>
 
-                {/* Interactive Console Console */}
-                <div className="h-60 border-t border-line flex flex-col overflow-hidden bg-paper shrink-0">
+                {/* Interactive Console Area */}
+                <div className={`h-60 lg:h-60 border-t border-line flex flex-col overflow-hidden bg-paper shrink-0 ${
+                  mobileCodingTab === "editor" ? "hidden lg:flex" : "flex"
+                }`}>
                   
                   {/* Console Tabs */}
                   <div className="flex items-center justify-between border-b border-line bg-card px-4 shrink-0">
@@ -1843,6 +1933,86 @@ export default function ExamAttempt() {
                 Submit Final Exam
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Question Map Modal Drawer */}
+      {showMobileMap && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 lg:hidden">
+          <div className="w-full max-w-sm bg-surface border border-line rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between border-b border-line pb-3 mb-4">
+              <h3 className="font-bold text-sm text-ink">Question Navigation Map</h3>
+              <button
+                type="button"
+                onClick={() => setShowMobileMap(false)}
+                className="text-ink-secondary hover:text-ink text-lg leading-none px-2"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {questionList.map((item, idx) => {
+                  const answered = isQuestionAnswered(item._id);
+                  const marked = isQuestionMarked(item._id);
+                  const visited = isQuestionVisited(idx);
+                  const isCurrent = idx === questionIndex;
+
+                  let btnStyles = "border border-line bg-card text-ink-secondary";
+                  if (isCurrent) {
+                    btnStyles = "border-2 border-accent bg-accent-soft text-accent-deep font-bold";
+                  } else if (marked) {
+                    btnStyles = "bg-warning-soft border-warning text-warning font-semibold";
+                  } else if (answered) {
+                    btnStyles = "bg-success-soft border-success text-success font-semibold";
+                  } else if (visited) {
+                    btnStyles = "border border-line bg-surface text-ink/75";
+                  } else {
+                    btnStyles = "border border-dashed border-line opacity-50 bg-paper text-ink-secondary";
+                  }
+
+                  const isLocked = settings.sequentialNavigation && idx > Math.max(...Array.from(visitedQuestions), 0) + 1;
+
+                  return (
+                    <button
+                      key={item._id}
+                      disabled={isLocked}
+                      onClick={() => {
+                        if (!settings.sequentialNavigation) {
+                          handleNavigateToQuestion(idx);
+                          setShowMobileMap(false);
+                        }
+                      }}
+                      className={`h-11 w-11 text-xs font-mono rounded-xl flex items-center justify-center ${btnStyles} ${
+                        isLocked ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Status Legend */}
+              <div className="p-3 bg-card/60 rounded-xl border border-line text-[10px] flex flex-col gap-2">
+                <span className="font-bold text-ink-secondary uppercase tracking-wider mb-1">Status Legend</span>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-accent-soft border border-accent"></span><span>Current Question</span></div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-success-soft border border-success"></span><span>Answered</span></div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-warning-soft border border-warning"></span><span>Marked for Review</span></div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-surface border border-line"></span><span>Visited</span></div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-paper border border-dashed border-line opacity-50"></span><span>Not Visited</span></div>
+              </div>
+            </div>
+
+            <Button
+              variant="secondary"
+              onClick={() => setShowMobileMap(false)}
+              className="w-full mt-4 py-2 text-xs font-bold"
+            >
+              Close Navigator
+            </Button>
           </div>
         </div>
       )}
