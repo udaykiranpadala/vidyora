@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 // questionKey should change every time a new question loads, so the timer resets.
-export default function Timer({ totalSeconds, questionKey, onExpire }) {
+export default function Timer({ totalSeconds, questionKey, onExpire, className = "", compact = false }) {
   const [secondsLeft, setSecondsLeft] = useState(() => {
     try {
       const saved = localStorage.getItem(`timer_left_${questionKey}`);
@@ -76,13 +76,18 @@ export default function Timer({ totalSeconds, questionKey, onExpire }) {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  const padStyles = compact
+    ? "px-2 py-1 rounded-lg text-[11px] gap-1"
+    : "px-3.5 py-1.5 rounded-xl text-xs gap-2";
+
   return (
     <div
-      className={`flex items-center gap-2 font-mono text-xs font-semibold px-3.5 py-1.5 rounded-xl border transition-colors ${
+      className={`flex items-center font-mono font-semibold border transition-colors ${padStyles} ${
         isLow ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
-      }`}
+      } ${className}`}
+      title="Question Time Remaining"
     >
-      <span>⏱</span>
+      <span className={compact ? "text-[10px]" : "text-xs"}>⏱</span>
       <span>{formatDisplay()}</span>
     </div>
   );

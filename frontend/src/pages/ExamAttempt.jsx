@@ -956,21 +956,21 @@ export default function ExamAttempt() {
       )}
 
       {/* Top Header */}
-      <header className="border-b border-line bg-surface px-6 py-3 flex items-center justify-between shrink-0 sticky top-0 z-40 shadow-sm">
-        <div className="flex items-center gap-4">
+      <header className="border-b border-line bg-surface px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between shrink-0 sticky top-0 z-40 shadow-sm gap-2">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <VidyoraLogo
             size="sm"
             to=""
-            className="flex items-center gap-2"
+            className="flex items-center gap-1.5 sm:gap-2 shrink-0"
           />
           <div className="h-6 w-[1px] bg-line hidden sm:block"></div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-full bg-accent-soft/50 border border-accent/20 text-accent flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+            <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent-soft/50 border border-accent/20 text-accent flex items-center justify-center text-xs font-bold shrink-0">
               👤
             </span>
-            <div>
-              <h1 className="font-semibold text-xs leading-tight tracking-tight max-w-[150px] truncate" title={location.state?.examTitle}>{location.state?.examTitle || "Online Exam"}</h1>
-              <p className="text-[10px] text-ink-secondary mt-0.5 leading-none">
+            <div className="min-w-0">
+              <h1 className="font-semibold text-xs leading-tight tracking-tight max-w-[80px] xs:max-w-[120px] sm:max-w-[150px] truncate" title={location.state?.examTitle}>{location.state?.examTitle || "Online Exam"}</h1>
+              <p className="text-[10px] text-ink-secondary mt-0.5 leading-none truncate hidden sm:block">
                 Candidate: <span className="font-sans font-bold text-accent">{location.state?.candidateName || "Student"}</span>
               </p>
             </div>
@@ -981,7 +981,7 @@ export default function ExamAttempt() {
             <button
               type="button"
               onClick={() => setShowMobileMap(true)}
-              className="lg:hidden px-2.5 py-1.5 border border-line bg-card hover:bg-line/20 rounded-xl text-xs font-semibold font-mono text-ink flex items-center gap-1.5 cursor-pointer"
+              className="lg:hidden px-2 py-1 border border-line bg-card hover:bg-line/20 rounded-xl text-xs font-semibold font-mono text-ink flex items-center gap-1 cursor-pointer shrink-0"
               title="Open Question Map"
             >
               <span>🗺️</span>
@@ -992,11 +992,13 @@ export default function ExamAttempt() {
           )}
 
           <div className="h-6 w-[1px] bg-line hidden sm:block"></div>
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Exam stats and status */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <div className="text-right hidden md:block">
             <p className="text-[10px] text-ink-secondary font-bold uppercase tracking-wider">Progress</p>
             <p className="text-xs font-mono font-semibold">Answered: {answeredCount}/{totalQuestions}</p>
@@ -1004,18 +1006,21 @@ export default function ExamAttempt() {
 
           {/* Warnings Counter */}
           {settings.enableFullScreen && (
-            <div className={`px-2.5 py-1.5 rounded-xl border text-xs font-mono font-semibold flex items-center gap-1.5 ${
+            <div className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl border text-[11px] sm:text-xs font-mono font-semibold flex items-center gap-1 shrink-0 ${
               warnings > 0 ? "border-danger bg-danger-soft text-danger animate-bounce" : "border-line text-ink-secondary"
-            }`}>
-              Violations: {warnings}/{settings.warningLimit || 3}
+            }`} title="Fullscreen Violations">
+              <span className="hidden sm:inline">Violations:</span>
+              <span className="sm:hidden">⚠️</span>
+              {warnings}/{settings.warningLimit || 3}
             </div>
           )}
 
           {/* Global Timer Display */}
-          <div className={`flex items-center gap-2 font-mono text-sm font-bold px-3.5 py-1.5 rounded-xl border ${
+          <div className={`flex items-center gap-1 sm:gap-2 font-mono text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border shrink-0 ${
             globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
-          }`}>
-            {formatTime(globalTimeLeft)}
+          }`} title="Total Exam Time Remaining">
+            <span className="text-xs">⏱</span>
+            <span>{formatTime(globalTimeLeft)}</span>
           </div>
 
           {/* Per-question timer */}
@@ -1024,6 +1029,8 @@ export default function ExamAttempt() {
               totalSeconds={question.timerSeconds}
               questionKey={question._id}
               onExpire={handleQuestionTimerExpire}
+              className="shrink-0"
+              compact={window.innerWidth < 640}
             />
           )}
 
@@ -1031,8 +1038,9 @@ export default function ExamAttempt() {
             {autoSaveStatus === "Saved" ? "Saved" : autoSaveStatus}
           </div>
 
-          <Button onClick={() => setShowReviewModal(true)} variant="secondary" className="px-4 py-1.5 text-xs font-semibold">
-            Submit Exam
+          <Button onClick={() => setShowReviewModal(true)} variant="secondary" className="px-2.5 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold shrink-0">
+            <span className="hidden sm:inline">Submit Exam</span>
+            <span className="sm:hidden">Submit</span>
           </Button>
         </div>
       </header>
@@ -1365,40 +1373,60 @@ export default function ExamAttempt() {
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
               
               {/* Mobile View Mode Tabs */}
-              <div className="lg:hidden flex items-center border-b border-line bg-surface px-3 py-1.5 gap-1.5 shrink-0 overflow-x-auto">
-                <button
-                  type="button"
-                  onClick={() => setMobileCodingTab("problem")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                    mobileCodingTab === "problem"
-                      ? "bg-accent text-white shadow-sm"
-                      : "text-ink-secondary hover:text-ink hover:bg-card"
-                  }`}
-                >
-                  📋 Problem
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMobileCodingTab("editor")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                    mobileCodingTab === "editor"
-                      ? "bg-accent text-white shadow-sm"
-                      : "text-ink-secondary hover:text-ink hover:bg-card"
-                  }`}
-                >
-                  💻 Code Editor
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMobileCodingTab("console")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                    mobileCodingTab === "console"
-                      ? "bg-accent text-white shadow-sm"
-                      : "text-ink-secondary hover:text-ink hover:bg-card"
-                  }`}
-                >
-                  🧪 Console & Run
-                </button>
+              <div className="lg:hidden flex items-center justify-between border-b border-line bg-surface px-2 sm:px-3 py-1.5 gap-1.5 shrink-0 overflow-x-auto">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setMobileCodingTab("problem")}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                      mobileCodingTab === "problem"
+                        ? "bg-accent text-white shadow-sm"
+                        : "text-ink-secondary hover:text-ink hover:bg-card"
+                    }`}
+                  >
+                    📋 Problem
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileCodingTab("editor")}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                      mobileCodingTab === "editor"
+                        ? "bg-accent text-white shadow-sm"
+                        : "text-ink-secondary hover:text-ink hover:bg-card"
+                    }`}
+                  >
+                    💻 Code
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileCodingTab("console")}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                      mobileCodingTab === "console"
+                        ? "bg-accent text-white shadow-sm"
+                        : "text-ink-secondary hover:text-ink hover:bg-card"
+                    }`}
+                  >
+                    🧪 Console
+                  </button>
+                </div>
+
+                {/* Persistent Mobile Timer in Tab Bar */}
+                <div className="flex items-center gap-1.5 shrink-0 ml-auto font-mono text-xs">
+                  <div className={`flex items-center gap-1 font-bold px-2 py-1 rounded-lg border ${
+                    globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
+                  }`} title="Exam Time Remaining">
+                    <span className="text-[10px]">⏱</span>
+                    <span>{formatTime(globalTimeLeft)}</span>
+                  </div>
+                  {!loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
+                    <Timer
+                      totalSeconds={question.timerSeconds}
+                      questionKey={question._id}
+                      onExpire={handleQuestionTimerExpire}
+                      compact
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Left Column: Problem details */}
@@ -1530,11 +1558,28 @@ export default function ExamAttempt() {
                   mobileCodingTab === "console" ? "hidden lg:block" : "block"
                 } ${editorFullscreen ? "fixed inset-0 z-50 bg-paper flex flex-col" : ""}`}>
                   {editorFullscreen && (
-                    <div className="flex justify-between items-center px-4 py-2 border-b border-line bg-surface">
+                    <div className="flex justify-between items-center px-3 sm:px-4 py-2 border-b border-line bg-surface gap-2 flex-wrap">
                       <span className="text-xs font-mono font-semibold">
                         {settings.enableFullScreen ? "Code Editor" : "Monaco Editor"} [Fullscreen] - {language.toUpperCase()}
                       </span>
-                      <Button variant="secondary" onClick={toggleEditorFullscreen} className="px-3 py-1 text-xs">Exit Fullscreen</Button>
+                      <div className="flex items-center gap-2">
+                        {/* Global Timer Display in Fullscreen Mode */}
+                        <div className={`flex items-center gap-1 font-mono text-xs font-bold px-2 py-1 rounded-lg border ${
+                          globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
+                        }`} title="Exam Time Remaining">
+                          <span className="text-[10px]">⏱</span>
+                          <span>{formatTime(globalTimeLeft)}</span>
+                        </div>
+                        {!loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
+                          <Timer
+                            totalSeconds={question.timerSeconds}
+                            questionKey={question._id}
+                            onExpire={handleQuestionTimerExpire}
+                            compact
+                          />
+                        )}
+                        <Button variant="secondary" onClick={toggleEditorFullscreen} className="px-3 py-1 text-xs">Exit Fullscreen</Button>
+                      </div>
                     </div>
                   )}
 
