@@ -22,7 +22,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { username, password });
-      login(res.data.organizer, res.data.token);
+      login(res.data.organizer, res.data.token, res.data.refreshToken);
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");

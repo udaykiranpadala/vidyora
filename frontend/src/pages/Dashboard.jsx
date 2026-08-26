@@ -66,6 +66,30 @@ export default function Dashboard() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [settingsStatus, setSettingsStatus] = useState("");
 
+  // Candidate Search & Participant Deletion State for Student Log
+  const [studentLogSearch, setStudentLogSearch] = useState("");
+  const [participantDeleteTarget, setParticipantDeleteTarget] = useState(null);
+  const [participantDeleting, setParticipantDeleting] = useState(false);
+  const [participantDeleteError, setParticipantDeleteError] = useState("");
+
+  const handleDeleteParticipant = async () => {
+    if (!participantDeleteTarget || !selectedExamId) return;
+    setParticipantDeleting(true);
+    setParticipantDeleteError("");
+    try {
+      await api.delete(`/exams/${selectedExamId}/attempts/${participantDeleteTarget._id}`);
+      setDrillDownResults((prev) => ({
+        ...prev,
+        attempts: (prev?.attempts || []).filter((a) => a._id !== participantDeleteTarget._id),
+      }));
+      setParticipantDeleteTarget(null);
+    } catch (err) {
+      setParticipantDeleteError(err.response?.data?.message || "Failed to delete participant record.");
+    } finally {
+      setParticipantDeleting(false);
+    }
+  };
+
   const searchInputRef = useRef(null);
 
   const loadExams = async (showSpinner = false) => {
@@ -844,8 +868,8 @@ export default function Dashboard() {
             <div className="flex flex-col gap-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="font-display text-2xl font-extrabold text-ink">Student Log</h1>
-                  <p className="text-xs text-ink-secondary mt-0.5">Track candidate submissions, completion times, and security warning alerts</p>
+                  <h1 className="font-display text-2xl font-extrabold text-ink">Student Log & Participant Management</h1>
+                  <p className="text-xs text-ink-secondary mt-0.5">Track candidate submissions, roll numbers, completion times, violations, and manage records</p>
                 </div>
 
                 {exams.length > 0 && (
@@ -864,6 +888,27 @@ export default function Dashboard() {
                 )}
               </div>
 
+              {/* Student Log Search Bar */}
+              <div className="relative w-full">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-secondary text-xs">🔍</span>
+                <input
+                  type="text"
+                  value={studentLogSearch}
+                  onChange={(e) => setStudentLogSearch(e.target.value)}
+                  placeholder="Search participant by name, roll number, department, section, or status..."
+                  className="w-full pl-9 pr-8 py-2.5 bg-surface border border-line rounded-xl text-xs text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-all"
+                />
+                {studentLogSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setStudentLogSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-secondary hover:text-ink cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
               <div className="bg-surface border border-line rounded-2xl p-6 shadow-sm">
                 {drillDownLoading ? (
                   <div className="py-16 text-center text-ink-secondary animate-pulse">Loading candidate list...</div>
@@ -871,46 +916,144 @@ export default function Dashboard() {
                   <div className="py-16 text-center text-ink-secondary">
                     No submissions recorded yet for this exam.
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-line text-ink-secondary font-bold uppercase tracking-wider text-[10px]">
-                          <th className="py-3 px-4">Candidate Name</th>
-                          <th className="py-3 px-4">Roll Number</th>
-                          <th className="py-3 px-4">Score</th>
-                          <th className="py-3 px-4">Time Taken</th>
-                          <th className="py-3 px-4">Violations</th>
-                          <th className="py-3 px-4">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-line/65">
-                        {drillDownResults.attempts.map((attempt) => {
-                          const violations = (attempt.tabSwitchCount || 0) + (attempt.fullscreenExitCount || 0) + (attempt.pasteAttemptCount || 0);
-                          return (
-                            <tr key={attempt._id} className="hover:bg-card/25 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-ink">{attempt.candidateName}</td>
-                              <td className="py-3.5 px-4 font-mono text-ink-secondary">{attempt.candidateRollNumber || "N/A"}</td>
-                              <td className="py-3.5 px-4 font-mono font-bold text-accent">{attempt.totalScore} pts</td>
-                              <td className="py-3.5 px-4 font-mono">{formatTime(attempt.totalTimeSeconds)}</td>
-                              <td className="py-3.5 px-4 font-mono">
-                                <span className={`font-semibold px-2 py-0.5 rounded text-[10px] ${violations > 0 ? "bg-danger-soft text-danger" : "bg-success-soft text-success"}`}>
-                                  ⚠️ {violations}
-                                </span>
-                              </td>
-                              <td className="py-3.5 px-4">
-                                <Badge variant={attempt.status === "completed" ? "published" : "draft"}>
-                                  {attempt.status}
-                                </Badge>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                ) : (() => {
+                  const filteredAttempts = (drillDownResults.attempts || []).filter((a) => {
+                    const term = studentLogSearch.toLowerCase().trim();
+                    if (!term) return true;
+                    return (
+                      (a.candidateName || "").toLowerCase().includes(term) ||
+                      (a.candidateRollNumber || "").toLowerCase().includes(term) ||
+                      (a.candidateBranch || "").toLowerCase().includes(term) ||
+                      (a.candidateSection || "").toLowerCase().includes(term) ||
+                      (a.candidateYear || "").toLowerCase().includes(term) ||
+                      (a.status || "").toLowerCase().includes(term)
+                    );
+                  });
+
+                  if (filteredAttempts.length === 0) {
+                    return (
+                      <div className="py-12 text-center text-ink-secondary">
+                        No participants match your search "{studentLogSearch}".
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-line text-ink-secondary font-bold uppercase tracking-wider text-[10px]">
+                            <th className="py-3 px-4">Candidate Name</th>
+                            <th className="py-3 px-4">Roll Number</th>
+                            <th className="py-3 px-4">Score</th>
+                            <th className="py-3 px-4">Time Taken</th>
+                            <th className="py-3 px-4">Violations</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line/65">
+                          {filteredAttempts.map((attempt) => {
+                            const violations = (attempt.tabSwitchCount || 0) + (attempt.fullscreenExitCount || 0) + (attempt.pasteAttemptCount || 0);
+                            return (
+                              <tr key={attempt._id} className="hover:bg-card/25 transition-colors">
+                                <td className="py-3.5 px-4 font-semibold text-ink">
+                                  {attempt.candidateName}
+                                  {(attempt.candidateBranch || attempt.candidateSection) && (
+                                    <span className="block text-[10px] text-ink-secondary font-mono font-normal">
+                                      {[attempt.candidateYear, attempt.candidateBranch, attempt.candidateSection && `Sec ${attempt.candidateSection}`].filter(Boolean).join(" • ")}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-3.5 px-4">
+                                  {attempt.candidateRollNumber ? (
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20 inline-block">
+                                      {attempt.candidateRollNumber}
+                                    </span>
+                                  ) : (
+                                    <span className="text-ink-secondary font-mono">N/A</span>
+                                  )}
+                                </td>
+                                <td className="py-3.5 px-4 font-mono font-bold text-accent">{attempt.totalScore} pts</td>
+                                <td className="py-3.5 px-4 font-mono">{formatTime(attempt.totalTimeSeconds)}</td>
+                                <td className="py-3.5 px-4 font-mono">
+                                  <span className={`font-semibold px-2 py-0.5 rounded text-[10px] ${violations > 0 ? "bg-danger-soft text-danger border border-danger/20" : "bg-success-soft text-success border border-success/20"}`}>
+                                    ⚠️ {violations}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4">
+                                  <Badge variant={attempt.status === "completed" ? "published" : "draft"}>
+                                    {attempt.status}
+                                  </Badge>
+                                </td>
+                                <td className="py-3.5 px-4 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => setParticipantDeleteTarget(attempt)}
+                                    className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger-soft/20 transition-all cursor-pointer inline-flex items-center gap-1 font-bold text-[11px]"
+                                    title="Delete Participant"
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <span>Delete</span>
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
               </div>
+
+              {/* Participant Delete Modal */}
+              {participantDeleteTarget && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-surface border border-line rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl flex flex-col gap-5">
+                    <div className="flex items-center gap-3 text-danger">
+                      <div className="w-10 h-10 rounded-full bg-danger-soft/40 border border-danger/30 flex items-center justify-center shrink-0">
+                        ⚠️
+                      </div>
+                      <div>
+                        <h3 className="font-display font-bold text-lg text-ink">Delete Participant?</h3>
+                        <p className="text-xs text-ink-secondary">Permanent action confirmation</p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-ink-secondary leading-relaxed bg-card p-4 rounded-xl border border-line">
+                      This will permanently remove this participant (<strong className="text-ink font-semibold">{participantDeleteTarget.candidateName}</strong>) and their examination data. This action cannot be undone.
+                    </p>
+
+                    {participantDeleteError && (
+                      <div className="text-xs text-danger bg-danger-soft/30 p-3 rounded-xl border border-danger/20">
+                        {participantDeleteError}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => { setParticipantDeleteTarget(null); setParticipantDeleteError(""); }}
+                        disabled={participantDeleting}
+                        className="px-4 py-2.5 rounded-xl border border-line text-xs font-semibold text-ink-secondary hover:text-ink hover:bg-card transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteParticipant}
+                        disabled={participantDeleting}
+                        className="px-5 py-2.5 rounded-xl bg-danger text-white text-xs font-bold shadow-md hover:bg-danger-deep transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {participantDeleting ? "Deleting..." : "Confirm & Delete"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

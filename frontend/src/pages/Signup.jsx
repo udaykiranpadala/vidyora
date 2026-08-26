@@ -65,7 +65,7 @@ export default function Signup() {
         password,
         collegeName,
       });
-      login(res.data.organizer, res.data.token);
+      login(res.data.organizer, res.data.token, res.data.refreshToken);
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Could not create account");

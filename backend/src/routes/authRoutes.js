@@ -9,6 +9,8 @@ import {
   updateProfile,
   forgotPasswordRequest,
   forgotPasswordReset,
+  refreshToken,
+  getMe,
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -18,6 +20,8 @@ router.post("/signup/verify-otp", verifyOtp);
 router.post("/signup/complete", completeSignup);
 router.post("/login", login);
 router.post("/google", googleLogin);
+router.post("/refresh", refreshToken);
+router.get("/me", requireAuth, getMe);
 router.patch("/profile", requireAuth, updateProfile);
 router.post("/forgot-password-request", forgotPasswordRequest);
 router.post("/forgot-password-reset", forgotPasswordReset);

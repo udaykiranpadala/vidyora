@@ -10,8 +10,15 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const generateSixDigitOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-const signToken = (organizerId) =>
-  jwt.sign({ organizerId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+const signAccessToken = (organizerId) =>
+  jwt.sign({ organizerId }, process.env.JWT_SECRET, { expiresIn: "24h" });
+
+const signRefreshToken = (organizerId) =>
+  jwt.sign(
+    { organizerId, type: "refresh" },
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+    { expiresIn: "30d" }
+  );
 
 // STEP 1: Candidate organizer enters email -> we send an OTP
 export const requestOtp = async (req, res) => {
@@ -101,15 +108,18 @@ export const completeSignup = async (req, res) => {
       isEmailVerified: true,
     });
 
-    const token = signToken(organizer._id);
+    const token = signAccessToken(organizer._id);
+    const refreshToken = signRefreshToken(organizer._id);
 
     res.status(201).json({
       message: "Account created successfully",
       token,
+      refreshToken,
       organizer: {
         id: organizer._id,
         email: organizer.email,
         username: organizer.username,
+        collegeName: organizer.collegeName || "",
       },
     });
   } catch (err) {
@@ -149,15 +159,18 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    const token = signToken(organizer._id);
+    const token = signAccessToken(organizer._id);
+    const refreshToken = signRefreshToken(organizer._id);
 
     res.json({
       message: "Login successful",
       token,
+      refreshToken,
       organizer: {
         id: organizer._id,
         email: organizer.email,
         username: organizer.username,
+        collegeName: organizer.collegeName || "",
       },
     });
   } catch (err) {
@@ -219,11 +232,13 @@ export const googleLogin = async (req, res) => {
       }
     }
 
-    const token = signToken(organizer._id);
+    const token = signAccessToken(organizer._id);
+    const refreshToken = signRefreshToken(organizer._id);
 
     res.json({
       message: "Login successful",
       token,
+      refreshToken,
       organizer: {
         id: organizer._id,
         email: organizer.email,
@@ -353,5 +368,70 @@ export const forgotPasswordReset = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to reset password" });
+  }
+};
+
+// Automatic Token Refresh for Seamless Session Management
+export const refreshToken = async (req, res) => {
+  try {
+    const { refreshToken: tokenFromReq } = req.body;
+    if (!tokenFromReq) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+
+    const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+    let decoded;
+    try {
+      decoded = jwt.verify(tokenFromReq, refreshSecret);
+    } catch {
+      return res.status(401).json({ message: "Invalid or expired refresh token" });
+    }
+
+    if (decoded.type && decoded.type !== "refresh") {
+      return res.status(401).json({ message: "Invalid token type" });
+    }
+
+    const organizer = await Organizer.findById(decoded.organizerId);
+    if (!organizer) {
+      return res.status(401).json({ message: "Organizer account no longer exists" });
+    }
+
+    const newToken = signAccessToken(organizer._id);
+    const newRefreshToken = signRefreshToken(organizer._id);
+
+    res.json({
+      token: newToken,
+      refreshToken: newRefreshToken,
+      organizer: {
+        id: organizer._id,
+        email: organizer.email,
+        username: organizer.username,
+        collegeName: organizer.collegeName || "",
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to refresh authentication session" });
+  }
+};
+
+// Validate & Retrieve Current Logged-in Organizer Profile
+export const getMe = async (req, res) => {
+  try {
+    const organizer = await Organizer.findById(req.organizerId).select("-passwordHash");
+    if (!organizer) {
+      return res.status(404).json({ message: "Organizer profile not found" });
+    }
+    res.json({
+      organizer: {
+        id: organizer._id,
+        email: organizer.email,
+        username: organizer.username,
+        collegeName: organizer.collegeName || "",
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch organizer profile" });
   }
 };

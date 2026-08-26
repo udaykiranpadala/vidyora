@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -8,14 +8,26 @@ export const AuthProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = (organizerData, token) => {
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      logout();
+    };
+    window.addEventListener("auth:expired", handleAuthExpired);
+    return () => window.removeEventListener("auth:expired", handleAuthExpired);
+  }, []);
+
+  const login = (organizerData, token, refreshToken) => {
     localStorage.setItem("organizerToken", token);
+    if (refreshToken) {
+      localStorage.setItem("organizerRefreshToken", refreshToken);
+    }
     localStorage.setItem("organizer", JSON.stringify(organizerData));
     setOrganizer(organizerData);
   };
 
   const logout = () => {
     localStorage.removeItem("organizerToken");
+    localStorage.removeItem("organizerRefreshToken");
     localStorage.removeItem("organizer");
     setOrganizer(null);
   };

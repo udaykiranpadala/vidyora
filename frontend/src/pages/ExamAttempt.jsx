@@ -6,6 +6,7 @@ import Button from "../components/Button";
 import Timer from "../components/Timer";
 import ThemeToggle from "../components/ThemeToggle";
 import Navbar from "../components/Navbar";
+import ExamInstructions from "../components/ExamInstructions";
 import { VidyoraLogo } from "../components/VidyoraLogo";
 import { useTheme } from "../context/ThemeContext";
 
@@ -752,6 +753,16 @@ export default function ExamAttempt() {
         e.stopPropagation();
         return;
       }
+      if (
+        e.key === "F12" ||
+        (isCmdOrCtrl && e.shiftKey && (key === "i" || key === "j" || key === "c")) ||
+        (isCmdOrCtrl && key === "u")
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        triggerAntiCheatWarning("tab_switch", "Security Alert: Developer tools and source inspection shortcuts are strictly prohibited.");
+        return;
+      }
       if (e.key === "PrintScreen") {
         e.preventDefault();
         triggerAntiCheatWarning("fullscreen_exit", "Security Alert: Taking screenshots is prohibited during the assessment.");
@@ -858,90 +869,21 @@ export default function ExamAttempt() {
       );
     }
 
-    const { examTitle, questionsList, startAt, endAt } = lobbyData;
-    const isPastEnd = endAt && new Date() >= new Date(endAt);
-
     return (
-      <div className="min-h-screen bg-paper font-expert flex flex-col">
-        <Navbar />
-
-        <div className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="w-full max-w-2xl bg-surface border border-line rounded-3xl p-8 md:p-10 shadow-xl flex flex-col gap-6">
-            <div className="text-center pb-4 border-b border-line/60">
-              <span className="text-xs uppercase font-extrabold tracking-widest text-accent-deep bg-accent-soft/30 px-3 py-1 rounded-full border border-accent/25">Assessment Lobby</span>
-              <h1 className="font-display text-3xl font-extrabold text-ink mt-3">{examTitle}</h1>
-              {startAt && (
-                <p className="text-xs text-ink-secondary mt-1.5 font-mono">
-                  Scheduled Start: {new Date(startAt).toLocaleString()}
-                </p>
-              )}
-            </div>
-
-            {/* Questions List Board */}
-            <div>
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-ink-secondary mb-3.5">Exam Structure & Instructions</h3>
-              <div className="flex flex-col gap-2.5 max-h-60 overflow-y-auto pr-1">
-                {questionsList.map((q, idx) => {
-                  const showNum = settings.showQuestionNumbers ?? true;
-                  const showTitle = settings.showQuestionTitles ?? true;
-                  const showMarks = settings.showMarks ?? true;
-                  
-                  return (
-                    <div key={q._id} className="flex items-center justify-between border border-line bg-card/45 hover:bg-card/75 p-3.5 rounded-xl transition-all">
-                      <div className="flex items-center gap-3">
-                        {showNum && (
-                          <span className="w-6 h-6 rounded-full bg-accent-soft/40 text-accent-deep border border-accent/20 text-xs font-bold font-mono flex items-center justify-center shrink-0">
-                            {idx + 1}
-                          </span>
-                        )}
-                        {showTitle ? (
-                          <span className="text-sm font-semibold text-ink">
-                            {showNum ? q.title : `Question: ${q.title}`}
-                          </span>
-                        ) : (
-                          showNum ? null : <span className="text-sm font-semibold text-ink">Question {idx + 1}</span>
-                        )}
-                      </div>
-                      {showMarks && (
-                        <span className="text-xs font-bold text-ink-secondary font-mono bg-paper/60 px-2.5 py-1 border border-line rounded-lg shrink-0">
-                          {q.totalPoints} Points
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Countdown / Start Action */}
-            <div className="flex flex-col items-center gap-4 pt-4 border-t border-line/60">
-              {lobbyCountdown > 0 ? (
-                <div className="flex flex-col items-center gap-2">
-                  <p className="text-xs font-extrabold uppercase tracking-widest text-ink-secondary">Exam Starts In</p>
-                  <div className="flex items-center gap-2 font-mono text-3xl font-black bg-danger-soft/20 text-danger border border-danger/25 px-6 py-3 rounded-2xl animate-pulse">
-                    ⏱ {formatLobbyTime(lobbyCountdown)}
-                  </div>
-                </div>
-              ) : isPastEnd ? (
-                <p className="text-sm text-danger font-bold">This exam has already ended.</p>
-              ) : (
-                <p className="text-xs text-emerald-600 font-bold flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1.5 border border-emerald-500/20 rounded-full">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                  Exam is active. You can begin now.
-                </p>
-              )}
-
-              <Button
-                onClick={handleStartExam}
-                disabled={lobbyCountdown > 0 || isPastEnd || submitting}
-                className="w-full py-3.5 text-base font-bold shadow-lg"
-              >
-                {submitting ? "Entering Exam..." : "Start Exam →"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ExamInstructions
+        examTitle={lobbyData.examTitle}
+        totalQuestions={lobbyData.questionsList?.length || 0}
+        settings={settings}
+        candidateName={lobbyData.candidateName}
+        candidateRollNumber={lobbyData.candidateRollNumber}
+        candidateYear={lobbyData.candidateYear}
+        candidateBranch={lobbyData.candidateBranch}
+        candidateSection={lobbyData.candidateSection}
+        onStartExam={handleStartExam}
+        submitting={submitting}
+        countdownSeconds={lobbyCountdown}
+        formatLobbyTime={formatLobbyTime}
+      />
     );
   }
 
@@ -1505,24 +1447,16 @@ export default function ExamAttempt() {
 
                     <button
                       onClick={() => setWordWrap(wordWrap === "on" ? "off" : "on")}
-                      className={`text-xs border rounded-lg px-2 py-1.5 transition-colors hidden sm:block ${
+                      className={`text-xs border rounded-lg px-2.5 py-1.5 transition-colors hidden sm:block font-semibold ${
                         wordWrap === "on" ? "border-accent text-accent bg-accent-soft/30" : "border-line text-ink-secondary"
                       }`}
+                      title="Toggle Word Wrap"
                     >
-                      Wrap
+                      {wordWrap === "on" ? "Word Wrap: On" : "Word Wrap: Off"}
                     </button>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setUseSimpleEditor(!useSimpleEditor)}
-                      className="px-2 py-1 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card flex items-center gap-1"
-                      title="Switch between Monaco and Simple Textarea Editor"
-                    >
-                      <span>{useSimpleEditor ? "⚡ Monaco" : "📝 Text Editor"}</span>
-                    </button>
-
                     <button
                       onClick={() => {
                         if (markedQuestions.has(question._id)) {
@@ -1539,16 +1473,16 @@ export default function ExamAttempt() {
                           });
                         }
                       }}
-                      className="p-1.5 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card hidden sm:block"
+                      className="px-3 py-1.5 border border-line text-xs font-semibold rounded-lg text-ink-secondary hover:text-ink hover:bg-card hidden sm:block cursor-pointer"
                       title="Mark question for review"
                     >
-                      {markedQuestions.has(question._id) ? "Marked" : "Mark"}
+                      {markedQuestions.has(question._id) ? "★ Marked" : "☆ Mark for Review"}
                     </button>
                     <button
                       onClick={toggleEditorFullscreen}
-                      className="p-1.5 border border-line text-xs rounded-lg text-ink-secondary hover:text-ink hover:bg-card hidden sm:block"
+                      className="px-3 py-1.5 border border-line text-xs font-semibold rounded-lg text-ink-secondary hover:text-ink hover:bg-card hidden sm:block cursor-pointer"
                     >
-                      {editorFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                      {editorFullscreen ? "Exit Fullscreen" : "⛶ Fullscreen Editor"}
                     </button>
                   </div>
                 </div>
