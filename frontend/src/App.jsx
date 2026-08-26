@@ -1,19 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import api from "./api/client";
-import Landing from "./pages/Landing";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
-import ExamBuilder from "./pages/ExamBuilder";
-import ExamResults from "./pages/ExamResults";
-import JoinExam from "./pages/JoinExam";
-import ExamAttempt from "./pages/ExamAttempt";
-import ExamComplete from "./pages/ExamComplete";
-import Leaderboard from "./pages/Leaderboard";
+
+// Lazy load route components for fast initial load performance
+const Landing = lazy(() => import("./pages/Landing"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ExamBuilder = lazy(() => import("./pages/ExamBuilder"));
+const ExamResults = lazy(() => import("./pages/ExamResults"));
+const JoinExam = lazy(() => import("./pages/JoinExam"));
+const ExamAttempt = lazy(() => import("./pages/ExamAttempt"));
+const ExamComplete = lazy(() => import("./pages/ExamComplete"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-paper flex flex-col items-center justify-center gap-3">
+    <div className="w-9 h-9 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+    <span className="text-xs font-mono font-bold text-accent tracking-wider uppercase animate-pulse">
+      Loading Vidyora...
+    </span>
+  </div>
+);
 
 function App() {
   useEffect(() => {
@@ -24,49 +35,51 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
 
-          {/* Organizer auth + dashboard */}
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/exams/:examId"
-            element={
-              <ProtectedRoute>
-                <ExamBuilder />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/exams/:examId/results"
-            element={
-              <ProtectedRoute>
-                <ExamResults />
-              </ProtectedRoute>
-            }
-          />
+            {/* Organizer auth + dashboard */}
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exams/:examId"
+              element={
+                <ProtectedRoute>
+                  <ExamBuilder />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exams/:examId/results"
+              element={
+                <ProtectedRoute>
+                  <ExamResults />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Test-taker (public, no login) */}
-          <Route path="/join" element={<JoinExam />} />
-          <Route path="/join/:accessCode" element={<JoinExam />} />
-          <Route path="/exam-attempt/:attemptId" element={<ExamAttempt />} />
-          <Route path="/exam-complete" element={<ExamComplete />} />
+            {/* Test-taker (public, no login) */}
+            <Route path="/join" element={<JoinExam />} />
+            <Route path="/join/:accessCode" element={<JoinExam />} />
+            <Route path="/exam-attempt/:attemptId" element={<ExamAttempt />} />
+            <Route path="/exam-complete" element={<ExamComplete />} />
 
-          {/* Public leaderboard */}
-          <Route path="/leaderboard/:accessCode" element={<Leaderboard />} />
+            {/* Public leaderboard */}
+            <Route path="/leaderboard/:accessCode" element={<Leaderboard />} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   );
