@@ -201,7 +201,12 @@ export const getQuestionForAttempt = async (req, res) => {
       })),
       tabSwitchCount: attempt.tabSwitchCount || 0,
       fullscreenExitCount: attempt.fullscreenExitCount || 0,
-      pasteAttemptCount: attempt.pasteAttemptCount || 0
+      pasteAttemptCount: attempt.pasteAttemptCount || 0,
+      candidateName: attempt.candidateName,
+      candidateRollNumber: attempt.candidateRollNumber,
+      candidateYear: attempt.candidateYear,
+      candidateBranch: attempt.candidateBranch,
+      candidateSection: attempt.candidateSection,
     });
   } catch (err) {
     console.error(err);
@@ -518,6 +523,11 @@ export const getAttemptLobby = async (req, res) => {
       endAt: exam.endAt,
       settings: exam.settings || {},
       startedAt: attempt.startedAt,
+      candidateName: attempt.candidateName,
+      candidateRollNumber: attempt.candidateRollNumber,
+      candidateYear: attempt.candidateYear,
+      candidateBranch: attempt.candidateBranch,
+      candidateSection: attempt.candidateSection,
       questionsList: questions.map((q, idx) => ({
         _id: q._id,
         order: q.order || (idx + 1),
