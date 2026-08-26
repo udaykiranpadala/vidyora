@@ -70,6 +70,13 @@ export default function ExamAttempt() {
   const [isLeaderboardPublished, setIsLeaderboardPublished] = useState(false);
   const [examTitleState, setExamTitleState] = useState("");
 
+  // Candidate Profile State
+  const [candidateNameState, setCandidateNameState] = useState("");
+  const [candidateRollNumberState, setCandidateRollNumberState] = useState("");
+  const [candidateYearState, setCandidateYearState] = useState("");
+  const [candidateBranchState, setCandidateBranchState] = useState("");
+  const [candidateSectionState, setCandidateSectionState] = useState("");
+
   // MCQ State
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState([]); // for multi-correct
@@ -222,7 +229,13 @@ export default function ExamAttempt() {
     setSubmitError("");
     try {
       const res = await attemptApi.getQuestion(attemptId, idx);
-      const { question: q, totalQuestions: t, settings: s, startedAt: start, answers: ans, questionList: ql, questionRemainingTimes: qrt, tabSwitchCount, fullscreenExitCount, pasteAttemptCount } = res.data;
+      const { question: q, totalQuestions: t, settings: s, startedAt: start, answers: ans, questionList: ql, questionRemainingTimes: qrt, tabSwitchCount, fullscreenExitCount, pasteAttemptCount, candidateName: cName, candidateRollNumber: cRoll, candidateYear: cYear, candidateBranch: cBranch, candidateSection: cSec } = res.data;
+      
+      if (cName) setCandidateNameState(cName);
+      if (cRoll) setCandidateRollNumberState(cRoll);
+      if (cYear) setCandidateYearState(cYear);
+      if (cBranch) setCandidateBranchState(cBranch);
+      if (cSec) setCandidateSectionState(cSec);
       
       // Initialize remaining timers from backend to localStorage FIRST before setting active states to avoid race conditions
       if (qrt) {
@@ -311,13 +324,18 @@ export default function ExamAttempt() {
     setLobbyError("");
     try {
       const res = await attemptApi.getLobby(attemptId);
-      const { examTitle, isClosed, startAt, endAt, settings: s, startedAt: start, accessCode, isLeaderboardPublished: lbPublished } = res.data;
+      const { examTitle, isClosed, startAt, endAt, settings: s, startedAt: start, accessCode, isLeaderboardPublished: lbPublished, candidateName: cName, candidateRollNumber: cRoll, candidateYear: cYear, candidateBranch: cBranch, candidateSection: cSec } = res.data;
       
       setLobbyData(res.data);
       setSettings(s);
       if (accessCode) setExamAccessCode(accessCode);
       if (lbPublished !== undefined) setIsLeaderboardPublished(lbPublished);
       if (examTitle) setExamTitleState(examTitle);
+      if (cName) setCandidateNameState(cName);
+      if (cRoll) setCandidateRollNumberState(cRoll);
+      if (cYear) setCandidateYearState(cYear);
+      if (cBranch) setCandidateBranchState(cBranch);
+      if (cSec) setCandidateSectionState(cSec);
       
       if (start) {
         setIsLobby(false);
@@ -911,9 +929,18 @@ export default function ExamAttempt() {
               👤
             </span>
             <div className="min-w-0">
-              <h1 className="font-semibold text-xs leading-tight tracking-tight max-w-[80px] xs:max-w-[120px] sm:max-w-[150px] truncate" title={location.state?.examTitle}>{location.state?.examTitle || "Online Exam"}</h1>
-              <p className="text-[10px] text-ink-secondary mt-0.5 leading-none truncate hidden sm:block">
-                Candidate: <span className="font-sans font-bold text-accent">{location.state?.candidateName || "Student"}</span>
+              <h1 className="font-semibold text-xs leading-tight tracking-tight truncate max-w-[120px] sm:max-w-[180px]" title={examTitleState || location.state?.examTitle}>
+                {examTitleState || location.state?.examTitle || "Online Exam"}
+              </h1>
+              <p className="text-[11px] text-ink-secondary mt-0.5 leading-none flex items-center gap-1 flex-wrap">
+                <span className="font-sans font-bold text-accent truncate">
+                  {candidateNameState || location.state?.candidateName || "Candidate"}
+                </span>
+                {(candidateRollNumberState || location.state?.candidateRollNumber) && (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 text-[10px]">
+                    {candidateRollNumberState || location.state?.candidateRollNumber}
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -1901,17 +1928,15 @@ export default function ExamAttempt() {
                   const visited = isQuestionVisited(idx);
                   const isCurrent = idx === questionIndex;
 
-                  let btnStyles = "border border-line bg-card text-ink-secondary";
+                  let btnStyles = "border-2 border-slate-400/40 bg-slate-500/10 text-slate-700 dark:text-slate-200 font-medium";
                   if (isCurrent) {
-                    btnStyles = "border-2 border-accent bg-accent-soft text-accent-deep font-bold";
+                    btnStyles = "border-2 border-accent-deep bg-accent text-white font-black shadow-md shadow-accent/30 ring-2 ring-accent/30";
                   } else if (marked) {
-                    btnStyles = "bg-warning-soft border-warning text-warning font-semibold";
+                    btnStyles = "bg-amber-500/20 border-2 border-amber-500/60 text-amber-600 dark:text-amber-400 font-bold shadow-sm";
                   } else if (answered) {
-                    btnStyles = "bg-success-soft border-success text-success font-semibold";
+                    btnStyles = "bg-emerald-500/20 border-2 border-emerald-500/60 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm";
                   } else if (visited) {
-                    btnStyles = "border border-line bg-surface text-ink/75";
-                  } else {
-                    btnStyles = "border border-dashed border-line opacity-50 bg-paper text-ink-secondary";
+                    btnStyles = "bg-sky-500/15 border-2 border-sky-500/50 text-sky-600 dark:text-sky-300 font-bold shadow-sm";
                   }
 
                   const isLocked = settings.sequentialNavigation && idx > Math.max(...Array.from(visitedQuestions), 0) + 1;
@@ -1937,13 +1962,28 @@ export default function ExamAttempt() {
               </div>
 
               {/* Status Legend */}
-              <div className="p-3 bg-card/60 rounded-xl border border-line text-[10px] flex flex-col gap-2">
-                <span className="font-bold text-ink-secondary uppercase tracking-wider mb-1">Status Legend</span>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-accent-soft border border-accent"></span><span>Current Question</span></div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-success-soft border border-success"></span><span>Answered</span></div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-warning-soft border border-warning"></span><span>Marked for Review</span></div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-surface border border-line"></span><span>Visited</span></div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-paper border border-dashed border-line opacity-50"></span><span>Not Visited</span></div>
+              <div className="p-3 bg-card rounded-xl border border-line text-xs flex flex-col gap-2.5 shadow-sm">
+                <span className="font-bold text-ink-secondary uppercase tracking-wider text-[10px] border-b border-line pb-1">Status Legend</span>
+                <div className="flex items-center gap-2 text-ink text-[11px]">
+                  <span className="w-3.5 h-3.5 rounded bg-accent border border-accent shrink-0"></span>
+                  <span className="font-semibold text-accent">Current Question</span>
+                </div>
+                <div className="flex items-center gap-2 text-ink text-[11px]">
+                  <span className="w-3.5 h-3.5 rounded bg-emerald-500/30 border-2 border-emerald-500 shrink-0"></span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Answered</span>
+                </div>
+                <div className="flex items-center gap-2 text-ink text-[11px]">
+                  <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border-2 border-amber-500 shrink-0"></span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">Marked for Review</span>
+                </div>
+                <div className="flex items-center gap-2 text-ink text-[11px]">
+                  <span className="w-3.5 h-3.5 rounded bg-sky-500/30 border-2 border-sky-500 shrink-0"></span>
+                  <span className="font-semibold text-sky-600 dark:text-sky-300">Visited (Unanswered)</span>
+                </div>
+                <div className="flex items-center gap-2 text-ink text-[11px]">
+                  <span className="w-3.5 h-3.5 rounded bg-slate-500/20 border-2 border-slate-400 shrink-0"></span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">Not Visited</span>
+                </div>
               </div>
             </div>
 
