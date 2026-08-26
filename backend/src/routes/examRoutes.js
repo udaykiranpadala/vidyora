@@ -15,7 +15,7 @@ import {
   deleteQuestion,
   reorderQuestions,
 } from "../controllers/questionController.js";
-import { getExamResults } from "../controllers/resultsController.js";
+import { getExamResults, deleteParticipantAttempt } from "../controllers/resultsController.js";
 
 const router = express.Router();
 
@@ -25,6 +25,7 @@ router.post("/", createExam);
 router.get("/", getMyExams);
 router.get("/:examId", getExamById);
 router.get("/:examId/results", getExamResults);
+router.delete("/:examId/attempts/:attemptId", deleteParticipantAttempt);
 router.patch("/:examId", updateExam);
 router.post("/:examId/publish", publishExam);
 router.post("/:examId/close", closeExam);

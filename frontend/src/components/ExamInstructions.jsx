@@ -20,6 +20,11 @@ export default function ExamInstructions({
 
   // Generate configuration-driven instructions dynamically
   const getDynamicRules = () => {
+    // If organizer configured custom instructions, render only enabled rules
+    if (settings.instructions && Array.isArray(settings.instructions) && settings.instructions.length > 0) {
+      return settings.instructions.filter((inst) => inst.enabled !== false);
+    }
+
     const rules = [];
 
     // 1. Duration & Timing

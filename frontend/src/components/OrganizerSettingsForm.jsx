@@ -36,8 +36,102 @@ const buildDateFromParts = (dateStr, hours, minutes, ampm) => {
   return d.toISOString();
 };
 
+const buildDefaultInstructions = (settings = {}) => [
+  {
+    id: "duration",
+    category: "Exam Timing",
+    title: `Duration: ${settings.duration || 60} Minutes`,
+    description: `The total time allowed for this examination is ${settings.duration || 60} minutes. The countdown timer starts as soon as you click 'Start Examination'.`,
+    enabled: true,
+    icon: "⏱️"
+  },
+  {
+    id: "fullscreen",
+    category: "Security Rule",
+    title: "Mandatory Full-Screen Mode",
+    description: "This exam must be taken in full-screen mode. Exiting full-screen mode or minimizing the browser window will trigger a security violation flag.",
+    enabled: settings.enableFullScreen !== false,
+    icon: "🖥️"
+  },
+  {
+    id: "clipboard",
+    category: "Anti-Cheat Policy",
+    title: "Clipboard & Context Menu Restrictions",
+    description: "Copying text (Ctrl+C), Pasting (Ctrl+V), Cutting (Ctrl+X), and Right-Click context menus are strictly prohibited and disabled during the exam.",
+    enabled: settings.disableCopy !== false || settings.disablePaste !== false,
+    icon: "🚫"
+  },
+  {
+    id: "violations",
+    category: "Violation Policy",
+    title: `Maximum Warning Limit: ${settings.warningLimit || 3} Violations`,
+    description: `Tab switches, window swapping, or exiting full-screen mode will log a security violation. Exceeding ${settings.warningLimit || 3} warnings will AUTO-SUBMIT your exam immediately.`,
+    enabled: true,
+    icon: "⚠️"
+  },
+  {
+    id: "navigation",
+    category: "Navigation Mode",
+    title: settings.sequentialNavigation ? "Strict Sequential Question Order" : "Flexible Question Navigation",
+    description: settings.sequentialNavigation
+      ? "Questions must be answered in order. You cannot navigate backwards to previous questions once you move forward."
+      : "You may attempt questions in any order using the question map panel and switch between questions freely before final submission.",
+    enabled: true,
+    icon: settings.sequentialNavigation ? "➡️" : "🔀"
+  },
+  {
+    id: "coding",
+    category: "Compiler Environment",
+    title: "Allowed Compilers & Evaluation",
+    description: "Write clean code solutions in allowed programming languages. Code will be compiled and evaluated against sample test cases.",
+    enabled: true,
+    icon: "💻"
+  }
+];
+
 export default function OrganizerSettingsForm({ initialSettings = {}, onSave, onCancel, submitting }) {
   const [activeTab, setActiveTab] = useState("general");
+
+  const [instructions, setInstructions] = useState(() => {
+    if (initialSettings.instructions && Array.isArray(initialSettings.instructions) && initialSettings.instructions.length > 0) {
+      return initialSettings.instructions;
+    }
+    return buildDefaultInstructions(initialSettings);
+  });
+
+  const handleInstructionToggle = (idx) => {
+    setInstructions((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], enabled: !next[idx].enabled };
+      return next;
+    });
+  };
+
+  const handleInstructionChange = (idx, field, value) => {
+    setInstructions((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: value };
+      return next;
+    });
+  };
+
+  const handleAddInstruction = () => {
+    setInstructions((prev) => [
+      ...prev,
+      {
+        id: `custom_${Date.now()}`,
+        category: "Custom Rule",
+        title: "New Custom Instruction",
+        description: "Write specific candidate instructions for this exam here...",
+        enabled: true,
+        icon: "📌",
+      },
+    ]);
+  };
+
+  const handleDeleteInstruction = (idx) => {
+    setInstructions((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   const [startDate, setStartDate] = useState(() => parseDateString(initialSettings.startAt).date);
   const [startTimeHours, setStartTimeHours] = useState(() => parseDateString(initialSettings.startAt).hours);
@@ -159,6 +253,7 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
     const endAt = buildDateFromParts(endDate, endTimeHours, endTimeMinutes, endTimeAmPm);
     onSave({
       ...settings,
+      instructions,
       startAt,
       endAt
     });
@@ -166,6 +261,7 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
 
   const tabs = [
     { id: "general", label: "General" },
+    { id: "instructions", label: "Pre-Exam Instructions" },
     { id: "questions", label: "Questions & UI" },
     { id: "coding", label: "Coding Env" },
     { id: "security", label: "Security & Strict Mode" },
@@ -354,6 +450,96 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
                 <p className="text-xs text-ink-secondary">Candidates must fill details before launching the exam.</p>
               </div>
             </label>
+          </div>
+        )}
+
+        {/* Tab: Pre-Exam Instructions Configurator */}
+        {activeTab === "instructions" && (
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-ink-secondary">
+                  Pre-Exam Instructions Configurator
+                </h3>
+                <p className="text-xs text-ink-secondary mt-0.5">
+                  Configure which instructions candidates see before starting this exam. Enable/disable rules or edit custom text.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddInstruction}
+                className="px-3.5 py-1.5 bg-accent text-white rounded-xl text-xs font-extrabold hover:bg-accent-hover transition-all cursor-pointer shadow-sm flex items-center gap-1 shrink-0"
+              >
+                <span>+</span> Add Custom Instruction
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {instructions.map((inst, idx) => (
+                <div
+                  key={inst.id || idx}
+                  className={`border rounded-2xl p-4 flex flex-col gap-3 transition-all ${
+                    inst.enabled
+                      ? "border-accent/40 bg-surface shadow-sm"
+                      : "border-line bg-card/30 opacity-60"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="text-xl p-1.5 bg-paper rounded-lg border border-line shrink-0">
+                        {inst.icon || "📜"}
+                      </span>
+                      <input
+                        type="text"
+                        value={inst.title}
+                        onChange={(e) => handleInstructionChange(idx, "title", e.target.value)}
+                        className="font-bold text-sm text-ink bg-transparent border border-transparent hover:border-line focus:border-accent focus:bg-surface rounded-lg px-2 py-1 outline-none w-full"
+                        placeholder="Instruction Title"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={inst.enabled}
+                          onChange={() => handleInstructionToggle(idx)}
+                          className="w-4 h-4 rounded border-line text-accent focus:ring-accent accent-accent"
+                        />
+                        <span className={inst.enabled ? "text-emerald-600 font-bold" : "text-ink-secondary"}>
+                          {inst.enabled ? "Enabled" : "Disabled"}
+                        </span>
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteInstruction(idx)}
+                        className="text-xs text-danger/70 hover:text-danger p-1 rounded hover:bg-danger-soft/20 cursor-pointer"
+                        title="Delete Instruction"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={inst.description}
+                      onChange={(e) => handleInstructionChange(idx, "description", e.target.value)}
+                      rows={2}
+                      className="w-full text-xs text-ink-secondary bg-paper border border-line rounded-xl p-2.5 outline-none focus:border-accent focus:text-ink leading-relaxed"
+                      placeholder="Instruction details shown to students..."
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {instructions.length === 0 && (
+                <div className="py-10 text-center text-ink-secondary border border-dashed border-line rounded-2xl">
+                  No instructions configured. Click "+ Add Custom Instruction" to add rules for students.
+                </div>
+              )}
+            </div>
           </div>
         )}
 

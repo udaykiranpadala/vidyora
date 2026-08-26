@@ -71,6 +71,7 @@ export default function Dashboard() {
   const [participantDeleteTarget, setParticipantDeleteTarget] = useState(null);
   const [participantDeleting, setParticipantDeleting] = useState(false);
   const [participantDeleteError, setParticipantDeleteError] = useState("");
+  const [participantSuccessMsg, setParticipantSuccessMsg] = useState("");
 
   const handleDeleteParticipant = async () => {
     if (!participantDeleteTarget || !selectedExamId) return;
@@ -82,6 +83,8 @@ export default function Dashboard() {
         ...prev,
         attempts: (prev?.attempts || []).filter((a) => a._id !== participantDeleteTarget._id),
       }));
+      setParticipantSuccessMsg(`Successfully deleted candidate record for "${participantDeleteTarget.candidateName}".`);
+      setTimeout(() => setParticipantSuccessMsg(""), 5000);
       setParticipantDeleteTarget(null);
     } catch (err) {
       setParticipantDeleteError(err.response?.data?.message || "Failed to delete participant record.");
@@ -887,6 +890,13 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+
+              {participantSuccessMsg && (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                  <span>✓</span>
+                  <span>{participantSuccessMsg}</span>
+                </div>
+              )}
 
               {/* Student Log Search Bar */}
               <div className="relative w-full">

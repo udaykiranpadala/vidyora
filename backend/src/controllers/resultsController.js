@@ -68,3 +68,28 @@ export const getPublicLeaderboard = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch leaderboard" });
   }
 };
+
+// Organizer-only: permanently delete candidate participant attempt
+export const deleteParticipantAttempt = async (req, res) => {
+  try {
+    const { examId, attemptId } = req.params;
+
+    // Verify organizer owns the exam
+    const exam = await Exam.findOne({ _id: examId, organizer: req.organizerId });
+    if (!exam) {
+      return res.status(403).json({ message: "Not authorized to modify this exam or exam not found" });
+    }
+
+    const attempt = await Attempt.findOne({ _id: attemptId, exam: examId });
+    if (!attempt) {
+      return res.status(404).json({ message: "Participant attempt record not found" });
+    }
+
+    await Attempt.deleteOne({ _id: attemptId });
+
+    res.json({ message: "Participant record deleted successfully", attemptId });
+  } catch (err) {
+    console.error("Delete participant error:", err);
+    res.status(500).json({ message: "Failed to delete participant record" });
+  }
+};

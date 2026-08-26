@@ -51,6 +51,8 @@ export default function ExamResults() {
     fetchResults();
   }, [examId]);
 
+  const [successMsg, setSuccessMsg] = useState("");
+
   const handleDeleteParticipant = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -61,6 +63,8 @@ export default function ExamResults() {
         ...prev,
         attempts: (prev?.attempts || []).filter((a) => a._id !== deleteTarget._id),
       }));
+      setSuccessMsg(`Successfully deleted participant record for "${deleteTarget.candidateName}".`);
+      setTimeout(() => setSuccessMsg(""), 5000);
       setDeleteTarget(null);
     } catch (err) {
       setDeleteError(err.response?.data?.message || "Failed to delete participant record.");
@@ -167,6 +171,13 @@ export default function ExamResults() {
             </p>
           </div>
         </div>
+
+        {successMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+            <span>✓</span>
+            <span>{successMsg}</span>
+          </div>
+        )}
 
         {/* Overview Stats */}
         <div className="flex flex-wrap items-center gap-4 text-sm mb-6 bg-card border border-line p-4 rounded-2xl">

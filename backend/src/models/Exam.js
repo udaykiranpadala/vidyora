@@ -106,6 +106,18 @@ const exam = new mongoose.Schema(
       showRank: { type: Boolean, default: true },
       hideRank: { type: Boolean, default: false },
       showLeaderboard: { type: Boolean, default: true },
+
+      // Pre-Exam Instructions Configurator
+      instructions: [
+        {
+          id: { type: String },
+          category: { type: String, default: "General Rule" },
+          title: { type: String },
+          description: { type: String },
+          enabled: { type: Boolean, default: true },
+          icon: { type: String, default: "📜" },
+        },
+      ],
     },
   },
   { timestamps: true }

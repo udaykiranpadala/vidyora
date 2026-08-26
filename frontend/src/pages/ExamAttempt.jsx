@@ -1444,16 +1444,6 @@ export default function ExamAttempt() {
                         A+
                       </button>
                     </div>
-
-                    <button
-                      onClick={() => setWordWrap(wordWrap === "on" ? "off" : "on")}
-                      className={`text-xs border rounded-lg px-2.5 py-1.5 transition-colors hidden sm:block font-semibold ${
-                        wordWrap === "on" ? "border-accent text-accent bg-accent-soft/30" : "border-line text-ink-secondary"
-                      }`}
-                      title="Toggle Word Wrap"
-                    >
-                      {wordWrap === "on" ? "Word Wrap: On" : "Word Wrap: Off"}
-                    </button>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -1487,7 +1477,7 @@ export default function ExamAttempt() {
                   </div>
                 </div>
 
-                {/* Monaco / Simple Editor Area */}
+                {/* Monaco Editor Area */}
                 <div className={`flex-1 relative min-h-[220px] ${
                   mobileCodingTab === "console" ? "hidden lg:block" : "block"
                 } ${editorFullscreen ? "fixed inset-0 z-50 bg-paper flex flex-col" : ""}`}>
@@ -1517,90 +1507,75 @@ export default function ExamAttempt() {
                     </div>
                   )}
 
-                  {useSimpleEditor ? (
-                    <textarea
-                      value={code}
-                      onChange={(e) => {
-                        setCode(e.target.value);
-                        saveLocalBackup(e.target.value, null, []);
-                      }}
-                      readOnly={isQuestionTimeExpired}
-                      placeholder="// Write code here..."
-                      spellCheck={false}
-                      className="w-full h-full p-4 font-mono text-xs bg-paper text-ink border-0 outline-none resize-none leading-relaxed"
-                      style={{ fontSize: `${editorFontSize}px` }}
-                    />
-                  ) : (
-                    <Editor
-                      height="100%"
-                      language={MONACO_LANG_MAP[language] || "plaintext"}
-                      value={code}
-                      onChange={(val) => {
-                        setCode(val ?? "");
-                        saveLocalBackup(val ?? "", null, []);
-                      }}
-                      onMount={handleEditorMount}
-                      theme={editorTheme}
-                      options={{
-                        fontSize: editorFontSize,
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        wordWrap: wordWrap,
-                        automaticLayout: true,
-                        readOnly: isQuestionTimeExpired,
-                        fixedOverflowWidgets: true,
-                      }}
-                    />
-                  )}
+                  <Editor
+                    height="100%"
+                    language={MONACO_LANG_MAP[language] || "plaintext"}
+                    value={code}
+                    onChange={(val) => {
+                      setCode(val ?? "");
+                      saveLocalBackup(val ?? "", null, []);
+                    }}
+                    onMount={handleEditorMount}
+                    theme={editorTheme}
+                    options={{
+                      fontSize: editorFontSize,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      wordWrap: "on",
+                      automaticLayout: true,
+                      readOnly: isQuestionTimeExpired,
+                      fixedOverflowWidgets: true,
+                    }}
+                  />
                 </div>
 
-                {/* Interactive Console Area */}
-                <div className={`h-60 lg:h-60 border-t border-line flex flex-col overflow-hidden bg-paper shrink-0 ${
-                  mobileCodingTab === "editor" ? "hidden lg:flex" : "flex"
+                {/* Console Panel (Outputs & Controls) */}
+                <div className={`border-t border-line bg-surface shrink-0 flex flex-col transition-all ${
+                  mobileCodingTab === "console" ? "flex-1" : "h-64"
                 }`}>
-                  
-                  {/* Console Tabs */}
-                  <div className="flex items-center justify-between border-b border-line bg-card px-4 shrink-0">
-                    <div className="flex gap-2">
+                  {/* Console Header Bar */}
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-line bg-card shrink-0 gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => setConsoleTab("testcases")}
-                        className={`px-3 py-2 text-xs font-semibold border-b-2 ${
-                          consoleTab === "testcases" ? "border-accent text-accent" : "border-transparent text-ink-secondary hover:text-ink"
+                        className={`text-xs font-semibold px-3 py-1 rounded-lg transition-colors ${
+                          consoleTab === "testcases"
+                            ? "bg-accent-soft text-accent border border-accent/20"
+                            : "text-ink-secondary hover:text-ink"
                         }`}
                       >
                         Sample Cases
                       </button>
                       <button
+                        type="button"
                         onClick={() => setConsoleTab("output")}
-                        className={`px-3 py-2 text-xs font-semibold border-b-2 ${
-                          consoleTab === "output" ? "border-accent text-accent" : "border-transparent text-ink-secondary hover:text-ink"
+                        className={`text-xs font-semibold px-3 py-1 rounded-lg transition-colors flex items-center gap-1.5 ${
+                          consoleTab === "output"
+                            ? "bg-accent-soft text-accent border border-accent/20"
+                            : "text-ink-secondary hover:text-ink"
                         }`}
                       >
-                        Run Outcomes
+                        <span>Execution Output</span>
+                        {runResults && (
+                          <span className={`w-2 h-2 rounded-full ${
+                            runResults.every((r) => r.passed) ? "bg-success" : "bg-danger"
+                          }`} />
+                        )}
                       </button>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      {settings.allowCustomInput && (
-                        <label className="flex items-center gap-2 text-[10px] font-mono text-ink-secondary cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={enableCustomInput}
-                            onChange={(e) => setEnableCustomInput(e.target.checked)}
-                            className="rounded accent-accent"
-                          />
-                          <span>Custom Stdin</span>
-                        </label>
-                      )}
-
                       <div className="flex gap-2 py-1">
                         {settings.allowRunCode && (
                           <button
+                            type="button"
                             onClick={handleRunCode}
                             disabled={running || isQuestionTimeExpired}
-                            className="bg-card text-ink border border-line px-3 py-1 rounded-lg text-xs font-semibold hover:bg-line/25 disabled:opacity-50 cursor-pointer transition-colors"
+                            className="px-4 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-2 border-emerald-500/60 dark:border-emerald-400/70 hover:bg-emerald-500/25 hover:scale-105 active:scale-95 shadow-md shadow-emerald-500/15 hover:shadow-emerald-500/30 transition-all duration-150 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                           >
-                            {running ? "Running..." : "Run Code"}
+                            <span>▶</span>
+                            <span>{running ? "Compiling..." : "Run Code"}</span>
                           </button>
                         )}
                         {settings.singleQuestionMode ? (
@@ -1635,28 +1610,15 @@ export default function ExamAttempt() {
                   <div className="flex-1 overflow-y-auto p-4 font-mono text-xs text-ink/80">
                     {consoleTab === "testcases" ? (
                       <div className="flex flex-col gap-3">
-                        {enableCustomInput ? (
-                          <div className="flex flex-col gap-2">
-                            <span className="text-[10px] uppercase font-bold text-ink-secondary/70">Provide Standard Input (stdin):</span>
-                            <textarea
-                              value={customInput}
-                              onChange={(e) => setCustomInput(e.target.value)}
-                              rows={4}
-                              className="w-full bg-surface border border-line rounded-lg p-2 font-mono text-xs text-ink focus:outline-none focus:border-accent"
-                              placeholder="e.g. 5\n10 20 30"
-                            />
-                          </div>
-                        ) : (
-                          <div>
-                            <p className="text-ink-secondary text-[10px] uppercase font-bold mb-2">Executing against these test cases:</p>
-                            {question.sampleTestCases?.map((tc, idx) => (
-                              <div key={idx} className="border-l-2 border-accent pl-3 py-1.5 mb-2 bg-surface/45 rounded-r-lg">
-                                <span className="font-semibold text-accent text-[10px]">Test Case {idx + 1}:</span>
-                                <p className="truncate text-ink-secondary">In: {tc.input || "(empty)"} ➜ Out: {tc.expectedOutput}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <div>
+                          <p className="text-ink-secondary text-[10px] uppercase font-bold mb-2">Sample Evaluation Test Cases:</p>
+                          {question.sampleTestCases?.map((tc, idx) => (
+                            <div key={idx} className="border-l-2 border-accent pl-3 py-1.5 mb-2 bg-surface/45 rounded-r-lg">
+                              <span className="font-semibold text-accent text-[10px]">Test Case {idx + 1}:</span>
+                              <p className="truncate text-ink-secondary">In: {tc.input || "(empty)"} ➜ Out: {tc.expectedOutput}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ) : (
                       // Run outcomes output console
