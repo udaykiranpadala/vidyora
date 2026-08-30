@@ -14,7 +14,7 @@ export default function LandingPageConfigurator({
     eventName: config.eventName ?? "COMPUTER SOCIETY OF INDIA",
     eventTitle: config.eventTitle ?? "CSI ROUND 3",
     logo: config.logo || "/csi-logo.png",
-    mainHeading: config.mainHeading ?? "CONGRATULATIONS, CODER!",
+    mainHeading: config.mainHeading ?? "CONGRATULATIONS, {name}!",
     subHeading: config.subHeading ?? "YOU'VE MADE IT TO ROUND 3",
     description:
       config.description ??

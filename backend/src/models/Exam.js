@@ -65,6 +65,7 @@ const exam = new mongoose.Schema(
       showQuestionNumbers: { type: Boolean, default: true },
       showQuestionTitles: { type: Boolean, default: true },
       showMarks: { type: Boolean, default: true },
+      showTestCaseMarks: { type: Boolean, default: true },
       showNegativeMarks: { type: Boolean, default: true },
       showDifficulty: { type: Boolean, default: true },
       showTopic: { type: Boolean, default: true },

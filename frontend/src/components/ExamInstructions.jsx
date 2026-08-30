@@ -202,7 +202,7 @@ export default function ExamInstructions({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-card p-4 rounded-2xl border border-line text-xs">
             <div>
               <span className="text-ink-secondary block text-[10px] uppercase font-bold tracking-wider">Candidate</span>
-              <span className="font-bold text-ink truncate block mt-0.5">{candidateName || "Candidate"}</span>
+              <span className="font-bold text-ink truncate block mt-0.5">{(candidateName || "Candidate").toUpperCase()}</span>
             </div>
             <div>
               <span className="text-ink-secondary block text-[10px] uppercase font-bold tracking-wider">Roll Number</span>

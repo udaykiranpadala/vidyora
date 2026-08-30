@@ -905,7 +905,7 @@ export default function ExamAttempt() {
         examTitle={lobbyData.examTitle}
         totalQuestions={lobbyData.questionsList?.length || 0}
         settings={settings}
-        candidateName={lobbyData.candidateName}
+        candidateName={(lobbyData?.candidateName || candidateNameState || location.state?.candidateName || "").toUpperCase()}
         candidateRollNumber={lobbyData.candidateRollNumber}
         candidateYear={lobbyData.candidateYear}
         candidateBranch={lobbyData.candidateBranch}
@@ -947,7 +947,7 @@ export default function ExamAttempt() {
               </h1>
               <p className="text-[11px] text-ink-secondary mt-0.5 leading-none flex items-center gap-1 flex-wrap">
                 <span className="font-sans font-bold text-accent truncate">
-                  {candidateNameState || location.state?.candidateName || "Candidate"}
+                  {(candidateNameState || location.state?.candidateName || "Candidate").toUpperCase()}
                 </span>
                 {(candidateRollNumberState || location.state?.candidateRollNumber) && (
                   <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 text-[10px]">
@@ -1433,7 +1433,9 @@ export default function ExamAttempt() {
                       <div key={idx} className="bg-card border border-line rounded-xl p-4 text-xs font-mono">
                         <div className="flex items-center justify-between border-b border-line pb-2 mb-2 text-[10px] uppercase text-ink-secondary">
                           <span>Sample Case {idx + 1}</span>
-                          <span className="text-success font-semibold">{tc.points} pts</span>
+                          {(settings.showTestCaseMarks !== false && settings.showMarks !== false) && (
+                            <span className="text-success font-semibold">{tc.points} pts</span>
+                          )}
                         </div>
                         <p className="text-ink-secondary mb-1">Input:</p>
                         <pre className="bg-paper border border-line p-2 rounded-lg whitespace-pre-wrap mb-3 text-ink/90">{tc.input || "(none)"}</pre>

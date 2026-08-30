@@ -60,22 +60,22 @@ export default function PreExamLandingPage({
 
   // Format participant greeting using organizer template & {name} placeholder
   const formatGreeting = (heading, name) => {
-    const displayName = name && name.trim() !== "" ? name.trim() : "Coder";
-    if (!heading) return `Congratulations, ${displayName}!`;
+    const rawName = name && name.trim() !== "" ? name.trim().toUpperCase() : "CODER";
+    if (!heading) return `CONGRATULATIONS ${rawName}`;
 
     // 1. Explicit placeholder replacement ({name}, {participantName}, {candidateName})
     if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(heading)) {
-      return heading.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, displayName);
+      return heading.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
     }
 
     // 2. If name is available and heading contains "CODER" or "Coder"
     if (name && name.trim() !== "" && /coder/i.test(heading)) {
-      return heading.replace(/coder/gi, displayName);
+      return heading.replace(/coder/gi, rawName);
     }
 
     // 3. If heading starts with "Congratulations"
     if (name && name.trim() !== "" && /^congratulations/i.test(heading.trim())) {
-      return `Congratulations, ${name.trim()}!`;
+      return `CONGRATULATIONS ${rawName}`;
     }
 
     return heading;

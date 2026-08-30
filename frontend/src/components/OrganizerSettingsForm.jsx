@@ -159,6 +159,7 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
     showQuestionNumbers: initialSettings.showQuestionNumbers ?? true,
     showQuestionTitles: initialSettings.showQuestionTitles ?? true,
     showMarks: initialSettings.showMarks ?? true,
+    showTestCaseMarks: initialSettings.showTestCaseMarks ?? true,
     showNegativeMarks: initialSettings.showNegativeMarks ?? true,
     showDifficulty: initialSettings.showDifficulty ?? true,
     showTopic: initialSettings.showTopic ?? true,
@@ -586,7 +587,8 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
                   Visibility Toggles
                 </h3>
                 {[
-                  { key: "showMarks", label: "Show Marks/Points to Students" },
+                  { key: "showMarks", label: "Show Overall Question Marks to Students" },
+                  { key: "showTestCaseMarks", label: "Show Test Case Marks/Points to Students" },
                   { key: "showNegativeMarks", label: "Show Negative Marks Info" },
                   { key: "showDifficulty", label: "Show Question Difficulty" },
                   { key: "showTopic", label: "Show Topic/Tag" },
@@ -627,35 +629,67 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
                   </div>
                 </label>
 
-                <label className="flex items-start gap-3 cursor-pointer mt-2 pt-2 border-t border-line/40">
-                  <input
-                    type="checkbox"
-                    checked={settings.enablePerQuestionTimer}
-                    onChange={(e) => handleChange("enablePerQuestionTimer", e.target.checked)}
-                    className="w-4 h-4 rounded border-line text-accent focus:ring-accent mt-0.5"
-                  />
-                  <div>
-                    <span className="text-sm font-medium">Per-Question Timer</span>
-                    <p className="text-[11px] text-ink-secondary leading-relaxed mt-0.5">
-                      Each question's timer works independently. Remaining time is saved and paused when switching between questions, and continues when reopened.
-                    </p>
-                  </div>
-                </label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-ink-secondary">
+                    Timer Mode Configuration
+                  </label>
+                  <p className="text-[11px] text-ink-secondary">Select how countdown timers operate for candidates in this exam.</p>
+                  
+                  <div className="flex flex-col gap-2 mt-1">
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      !settings.enablePerQuestionTimer ? "border-accent bg-accent-soft/30" : "border-line bg-card/30"
+                    }`}>
+                      <input
+                        type="radio"
+                        name="timerMode"
+                        checked={!settings.enablePerQuestionTimer}
+                        onChange={() => handleChange("enablePerQuestionTimer", false)}
+                        className="mt-0.5 accent-accent"
+                      />
+                      <div>
+                        <span className="text-sm font-semibold">Total Exam Timer (Overall Duration)</span>
+                        <p className="text-[11px] text-ink-secondary leading-relaxed mt-0.5">
+                          Countdown timer tracks the overall exam duration ({settings.duration || 60} mins). When total time is over, the exam automatically submits.
+                        </p>
+                      </div>
+                    </label>
 
-                <label className="flex items-start gap-3 cursor-pointer mt-2 pt-2 border-t border-line/40">
-                  <input
-                    type="checkbox"
-                    checked={settings.showTimerInQuestionList}
-                    onChange={(e) => handleChange("showTimerInQuestionList", e.target.checked)}
-                    className="w-4 h-4 rounded border-line text-accent focus:ring-accent mt-0.5"
-                  />
-                  <div>
-                    <span className="text-sm font-medium">Show Question Timer in Question List</span>
-                    <p className="text-[11px] text-ink-secondary leading-relaxed mt-0.5">
-                      If enabled, students can see the remaining time for each question in the question list overview.
-                    </p>
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      settings.enablePerQuestionTimer ? "border-accent bg-accent-soft/30" : "border-line bg-card/30"
+                    }`}>
+                      <input
+                        type="radio"
+                        name="timerMode"
+                        checked={settings.enablePerQuestionTimer}
+                        onChange={() => handleChange("enablePerQuestionTimer", true)}
+                        className="mt-0.5 accent-accent"
+                      />
+                      <div>
+                        <span className="text-sm font-semibold">Per-Question Timer</span>
+                        <p className="text-[11px] text-ink-secondary leading-relaxed mt-0.5">
+                          Each question has an independent countdown timer. Remaining time is saved per question and continues when reopened.
+                        </p>
+                      </div>
+                    </label>
                   </div>
-                </label>
+                </div>
+
+                {settings.enablePerQuestionTimer && (
+                  <label className="flex items-start gap-3 cursor-pointer mt-2 pt-2 border-t border-line/40">
+                    <input
+                      type="checkbox"
+                      checked={settings.showTimerInQuestionList}
+                      onChange={(e) => handleChange("showTimerInQuestionList", e.target.checked)}
+                      className="w-4 h-4 rounded border-line text-accent focus:ring-accent mt-0.5"
+                    />
+                    <div>
+                      <span className="text-sm font-medium">Show Question Timer in Question List</span>
+                      <p className="text-[11px] text-ink-secondary leading-relaxed mt-0.5">
+                        If enabled, students can see the remaining time for each question in the question list overview.
+                      </p>
+                    </div>
+                  </label>
+                )}
               </div>
 
               <div className="flex flex-col gap-3 mt-1">

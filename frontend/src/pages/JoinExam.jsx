@@ -61,9 +61,12 @@ export default function JoinExam() {
 
     setLoading(true);
     try {
+      const uppercaseName = candidateName.trim().toUpperCase();
+      const uppercaseRoll = candidateRollNumber.trim().toUpperCase();
+
       const res = await attemptApi.join(accessCode.toUpperCase(), {
-        candidateName,
-        candidateRollNumber,
+        candidateName: uppercaseName,
+        candidateRollNumber: uppercaseRoll,
         candidateYear,
         candidateSection,
         candidateBranch,
@@ -73,8 +76,8 @@ export default function JoinExam() {
         state: {
           examTitle: res.data.examTitle,
           totalQuestions: res.data.totalQuestions,
-          candidateName,
-          candidateRollNumber,
+          candidateName: uppercaseName,
+          candidateRollNumber: uppercaseRoll,
           candidateYear,
           candidateSection,
           candidateBranch,
