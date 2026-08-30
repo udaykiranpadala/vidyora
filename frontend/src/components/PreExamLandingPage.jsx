@@ -87,24 +87,23 @@ export default function PreExamLandingPage({
       }`}
       style={{
         backgroundColor: backgroundColor,
-        backgroundImage: `radial-gradient(circle at 50% 15%, ${primaryColor}22 0%, transparent 65%), radial-gradient(circle at 80% 85%, #05966915 0%, transparent 55%)`,
+        backgroundImage: `radial-gradient(circle at 50% 15%, ${primaryColor}20 0%, transparent 65%), radial-gradient(circle at 80% 85%, #05966910 0%, transparent 55%)`,
       }}
     >
-      {/* Ambient Grid & Background Glow Effect */}
+      {/* Ambient Background Grid Effect */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
         <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full blur-[150px] opacity-25"
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full blur-[160px] opacity-20"
           style={{ backgroundColor: primaryColor }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:36px_36px] opacity-35" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:36px_36px] opacity-30" />
       </div>
 
       {/* Top Navigation Bar Branding */}
       {!isPreview && (
         <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between py-2 border-b border-line/30 mb-2">
           <VidyoraLogo size="sm" to="#" className="shrink-0" />
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-line text-[11px] font-mono font-bold text-ink-secondary">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surface border border-line text-[11px] font-sans font-semibold tracking-wider text-ink-secondary">
             <span>OFFICIAL ASSESSMENT LOBBY</span>
           </div>
         </header>
@@ -113,37 +112,25 @@ export default function PreExamLandingPage({
       {/* Main Centered Content Area */}
       <div className="relative z-10 max-w-4xl w-full mx-auto flex flex-col items-center text-center my-auto py-4">
         
-        {/* 🌟 CENTERED LOGO WITH BEST MULTI-LAYER ANIMATION EFFECT */}
+        {/* 🌟 CENTERED CSI / EVENT LOGO CONTAINER (NO MULTI-COLOR CONIC RINGS) */}
         <div
           className={`relative flex flex-col items-center justify-center my-3 transition-all duration-1000 transform ${
             mounted ? "translate-y-0 opacity-100 scale-100" : "translate-y-6 opacity-0 scale-90"
           }`}
         >
           <div className="relative group cursor-pointer animate-float-logo">
-            {/* Layer 1: Ambient Pulsing Halo */}
+            {/* Subtle soft backdrop glow matching primary theme color only */}
             <div
-              className="absolute -inset-6 rounded-full opacity-60 blur-2xl animate-pulse-glow"
-              style={{
-                background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`,
-              }}
+              className="absolute -inset-4 rounded-full opacity-20 blur-xl"
+              style={{ backgroundColor: primaryColor }}
             />
 
-            {/* Layer 2: Rotating Conic Gradient Aura Ring */}
-            <div className="absolute -inset-2.5 rounded-full animate-rotate-glow opacity-80 overflow-hidden p-[2px]">
-              <div
-                className="w-full h-full rounded-full"
-                style={{
-                  background: `conic-gradient(from 0deg, ${primaryColor}, #3b82f6, #10b981, #f59e0b, ${primaryColor})`,
-                }}
-              />
-            </div>
-
-            {/* Layer 3: Glassmorphic Floating Container */}
-            <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-slate-900/90 border border-slate-700/80 p-3.5 flex items-center justify-center shadow-[0_0_50px_rgba(5,150,105,0.3)] backdrop-blur-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-[0_0_70px_rgba(5,150,105,0.5)]">
+            {/* Clean, professional circular logo container */}
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white p-3.5 flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.4)] border border-slate-200/30 backdrop-blur-md transition-all duration-500 group-hover:scale-105">
               <img
                 src={logo}
                 alt={eventName}
-                className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+                className="w-full h-full object-contain"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "/csi-logo.png";
@@ -152,13 +139,10 @@ export default function PreExamLandingPage({
             </div>
           </div>
 
-          {/* Organization Badge below Centered Logo */}
+          {/* Clean, Professional Organization Name Text (NO AI green dots or cyan mono fonts) */}
           {eventName && (
-            <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/60 backdrop-blur-md shadow-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-mono font-bold tracking-widest text-emerald-300 uppercase">
-                {eventName}
-              </span>
+            <div className="mt-4 font-sans font-bold text-xs sm:text-sm tracking-[0.2em] text-slate-200 uppercase">
+              {eventName}
             </div>
           )}
         </div>
@@ -169,12 +153,12 @@ export default function PreExamLandingPage({
             mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
           }`}
         >
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-2 font-display bg-clip-text text-transparent bg-gradient-to-b from-white via-slate-100 to-slate-300">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mt-1 mb-2 font-display bg-clip-text text-transparent bg-gradient-to-b from-white via-slate-100 to-slate-300">
             {greetingText}
           </h1>
 
           {subHeading && (
-            <p className="text-base sm:text-xl font-bold tracking-wider text-emerald-400 uppercase font-mono mb-3">
+            <p className="text-base sm:text-xl font-bold tracking-wider text-emerald-400 uppercase font-sans mb-3">
               {subHeading}
             </p>
           )}
@@ -189,11 +173,11 @@ export default function PreExamLandingPage({
         {/* 3. Motivational Callout Banner */}
         {motivationalHeading && (
           <div
-            className={`w-full max-w-xl my-3 py-3 px-6 rounded-2xl bg-gradient-to-r from-slate-900/60 via-slate-800/80 to-slate-900/60 border border-emerald-500/30 backdrop-blur-md shadow-lg transition-all duration-700 delay-300 transform ${
+            className={`w-full max-w-xl my-3 py-3 px-6 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md shadow-lg transition-all duration-700 delay-300 transform ${
               mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"
             }`}
           >
-            <span className="text-xs sm:text-sm font-mono font-extrabold tracking-widest text-yellow-400 uppercase flex items-center justify-center gap-2">
+            <span className="text-xs sm:text-sm font-sans font-bold tracking-widest text-amber-400 uppercase flex items-center justify-center gap-2">
               <span>⚡</span>
               <span>{motivationalHeading}</span>
             </span>
@@ -207,7 +191,7 @@ export default function PreExamLandingPage({
               mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
           >
-            <div className="text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-3 text-center">
+            <div className="text-xs font-sans font-bold tracking-widest text-slate-400 uppercase mb-3 text-center">
               Candidate Selection Pipeline
             </div>
             
@@ -221,15 +205,15 @@ export default function PreExamLandingPage({
                     key={idx}
                     className={`relative p-3.5 rounded-2xl border transition-all duration-300 flex flex-col items-center justify-between text-center gap-2 backdrop-blur-md ${
                       isCurrent
-                        ? "bg-slate-900/90 border-emerald-500/70 shadow-[0_0_25px_rgba(5,150,105,0.3)] scale-[1.03]"
+                        ? "bg-slate-900/90 border-emerald-500/70 shadow-[0_0_20px_rgba(5,150,105,0.25)] scale-[1.03]"
                         : "bg-slate-900/40 border-slate-800/80 hover:border-slate-700"
                     }`}
                   >
-                    <span className="text-xs font-extrabold font-mono text-slate-200 tracking-wide">
+                    <span className="text-xs font-bold font-sans text-slate-200 tracking-wide">
                       {stage.label}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${badge.badgeClass}`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold border ${badge.badgeClass}`}
                     >
                       <span>{badge.icon}</span>
                       <span>{badge.text}</span>
@@ -249,7 +233,7 @@ export default function PreExamLandingPage({
         >
           <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1">
             <span className="text-2xl sm:text-3xl block mb-1">🧠</span>
-            <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-200 block uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
               Logic
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
@@ -259,7 +243,7 @@ export default function PreExamLandingPage({
 
           <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1">
             <span className="text-2xl sm:text-3xl block mb-1">💻</span>
-            <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-200 block uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
               Coding
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
@@ -269,7 +253,7 @@ export default function PreExamLandingPage({
 
           <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1">
             <span className="text-2xl sm:text-3xl block mb-1">⚡</span>
-            <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-200 block uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
               Speed
             </span>
             <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
@@ -285,7 +269,7 @@ export default function PreExamLandingPage({
           }`}
         >
           {eventTitle && (
-            <span className="text-xs font-mono font-semibold tracking-widest text-slate-400 uppercase block mb-1">
+            <span className="text-xs font-sans font-semibold tracking-widest text-slate-400 uppercase block mb-1">
               {eventName} × VIDYORA
             </span>
           )}
@@ -297,7 +281,7 @@ export default function PreExamLandingPage({
           )}
 
           {tagline && (
-            <p className="text-xs sm:text-sm font-mono font-bold tracking-widest text-emerald-400 uppercase">
+            <p className="text-xs sm:text-sm font-sans font-bold tracking-widest text-emerald-400 uppercase">
               {tagline}
             </p>
           )}
@@ -312,10 +296,10 @@ export default function PreExamLandingPage({
           <button
             type="button"
             onClick={onContinue}
-            className="btn-animate btn-border-glow group relative w-full py-4 px-8 rounded-2xl text-base sm:text-lg font-mono font-extrabold tracking-wider text-white overflow-hidden shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+            className="btn-animate btn-border-glow group relative w-full py-4 px-8 rounded-2xl text-base sm:text-lg font-sans font-extrabold tracking-wider text-white overflow-hidden shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             style={{
               backgroundColor: primaryColor,
-              boxShadow: `0 0 35px ${primaryColor}70`,
+              boxShadow: `0 0 30px ${primaryColor}60`,
             }}
           >
             {/* Shimmer / Glow Overlay */}
@@ -329,7 +313,7 @@ export default function PreExamLandingPage({
         {/* 8. Footer Note */}
         {footerText && (
           <p
-            className={`mt-6 text-xs font-mono text-slate-400 tracking-wider transition-all duration-700 delay-750 ${
+            className={`mt-6 text-xs font-sans text-slate-400 tracking-wider transition-all duration-700 delay-750 ${
               mounted ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -339,7 +323,7 @@ export default function PreExamLandingPage({
       </div>
 
       {/* Vidyora Branding Footer Accent */}
-      <div className="relative z-10 text-center py-2 text-[10px] font-mono text-slate-500 tracking-widest uppercase">
+      <div className="relative z-10 text-center py-2 text-[10px] font-sans font-medium text-slate-500 tracking-widest uppercase">
         Powered by Vidyora Assessment Platform
       </div>
     </div>
