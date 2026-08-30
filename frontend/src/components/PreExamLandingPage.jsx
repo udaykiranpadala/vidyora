@@ -46,10 +46,30 @@ export default function PreExamLandingPage({
       ? config.journey.stages
       : defaultStages;
 
-  // Format participant greeting
-  const greetingText = candidateName && candidateName.trim() !== ""
-    ? `Congratulations, ${candidateName}!`
-    : mainHeading;
+  // Format participant greeting using organizer template & {name} placeholder
+  const formatGreeting = (heading, name) => {
+    const displayName = name && name.trim() !== "" ? name.trim() : "Coder";
+    if (!heading) return `Congratulations, ${displayName}!`;
+
+    // 1. Explicit placeholder replacement ({name}, {participantName}, {candidateName})
+    if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(heading)) {
+      return heading.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, displayName);
+    }
+
+    // 2. If name is available and heading contains "CODER" or "Coder"
+    if (name && name.trim() !== "" && /coder/i.test(heading)) {
+      return heading.replace(/coder/gi, displayName);
+    }
+
+    // 3. If heading starts with "Congratulations"
+    if (name && name.trim() !== "" && /^congratulations/i.test(heading.trim())) {
+      return `Congratulations, ${name.trim()}!`;
+    }
+
+    return heading;
+  };
+
+  const greetingText = formatGreeting(mainHeading, candidateName);
 
   const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {

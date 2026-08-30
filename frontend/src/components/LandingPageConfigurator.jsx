@@ -297,12 +297,17 @@ export default function LandingPageConfigurator({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Main Greeting Heading"
-                    value={landingConfig.mainHeading}
-                    onChange={(e) => updateConfig("mainHeading", e.target.value)}
-                    placeholder="e.g. CONGRATULATIONS, CODER!"
-                  />
+                  <div className="flex flex-col">
+                    <Input
+                      label="Main Greeting Heading"
+                      value={landingConfig.mainHeading}
+                      onChange={(e) => updateConfig("mainHeading", e.target.value)}
+                      placeholder="e.g. Congratulations, {name}!"
+                    />
+                    <p className="text-[10px] text-ink-secondary mt-1">
+                      💡 Use <code className="bg-card px-1 py-0.5 rounded text-accent font-bold">&#123;name&#125;</code> to insert participant's name (e.g. <span className="italic">Congratulations, &#123;name&#125;!</span>).
+                    </p>
+                  </div>
                   <Input
                     label="Sub Heading"
                     value={landingConfig.subHeading}
