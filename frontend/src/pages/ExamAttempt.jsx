@@ -511,6 +511,7 @@ export default function ExamAttempt() {
         language: question.type === "coding" ? language : "",
         timeTakenSeconds,
         autoSubmitted: false,
+        isDraft: true,
         remainingSeconds,
       }).then(() => {
         setAutoSaveStatus("Saved");

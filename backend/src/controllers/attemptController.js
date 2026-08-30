@@ -303,6 +303,7 @@ export const submitAnswer = async (req, res) => {
       timeTakenSeconds,
       autoSubmitted,
       remainingSeconds,
+      isDraft, // true during 15s background draft auto-saves
     } = req.body;
 
     const attempt = await Attempt.findById(attemptId);
@@ -333,6 +334,11 @@ export const submitAnswer = async (req, res) => {
     let answerRecord;
     let pointsEarned = 0;
 
+    const existingIndex = attempt.answers.findIndex(
+      (a) => a.question.toString() === questionId
+    );
+    const existingAnswer = existingIndex > -1 ? attempt.answers[existingIndex] : null;
+
     if (type === "mcq") {
       const isCorrect =
         selectedOptionIndex !== null &&
@@ -348,9 +354,12 @@ export const submitAnswer = async (req, res) => {
         timeTakenSeconds: timeTakenSeconds || 0,
       };
     } else {
-      let testCaseResults = [];
+      let testCaseResults = existingAnswer?.testCaseResults || [];
 
-      if (code && code.trim() && language) {
+      // If this is a 15s background auto-save draft, skip heavy external Judge0 evaluation to handle 100+ concurrent students instantly
+      if (isDraft && existingAnswer) {
+        pointsEarned = existingAnswer.pointsEarned || 0;
+      } else if (code && code.trim() && language) {
         try {
           const { results, totalPointsEarned } = await runAgainstTestCases(
             code,
@@ -364,9 +373,7 @@ export const submitAnswer = async (req, res) => {
           pointsEarned = totalPointsEarned;
         } catch (err) {
           console.error("Judge0 grading service offline, auto-saving answer code:", err.message);
-          
-          // Save the code but score as 0 if execution service fails. Show message.
-          testCaseResults = question.testCases.map((tc) => ({
+          testCaseResults = (question.testCases || []).map(() => ({
             passed: false,
             pointsEarned: 0,
           }));
@@ -386,13 +393,7 @@ export const submitAnswer = async (req, res) => {
       };
     }
 
-    // Support updating answers if they were already answered
-    const existingIndex = attempt.answers.findIndex(
-      (a) => a.question.toString() === questionId
-    );
-
     if (existingIndex > -1) {
-      // Subtract old scores, add new ones
       const oldPoints = attempt.answers[existingIndex].pointsEarned;
       attempt.totalScore = Math.max(0, attempt.totalScore - oldPoints + pointsEarned);
 
@@ -423,14 +424,35 @@ export const submitAnswer = async (req, res) => {
 export const completeAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
-    const attempt = await Attempt.findByIdAndUpdate(
-      attemptId,
-      { status: "completed", completedAt: new Date() },
-      { new: true }
-    );
+    const attempt = await Attempt.findById(attemptId);
     if (!attempt) {
       return res.status(404).json({ message: "Attempt not found" });
     }
+
+    if (attempt.status !== "completed") {
+      // Evaluate any ungraded coding draft answers before finalizing attempt score
+      for (let i = 0; i < attempt.answers.length; i++) {
+        const ans = attempt.answers[i];
+        if (ans.type === "coding" && ans.code && ans.code.trim() && ans.language && (!ans.testCaseResults || ans.testCaseResults.length === 0)) {
+          const q = await Question.findById(ans.question);
+          if (q && q.testCases && q.testCases.length > 0) {
+            try {
+              const { results, totalPointsEarned } = await runAgainstTestCases(ans.code, ans.language, q.testCases);
+              ans.testCaseResults = results.map(r => ({ passed: r.passed, pointsEarned: r.pointsEarned }));
+              attempt.totalScore = Math.max(0, attempt.totalScore - ans.pointsEarned + totalPointsEarned);
+              ans.pointsEarned = totalPointsEarned;
+            } catch (err) {
+              console.warn("Judge0 final evaluation warning:", err.message);
+            }
+          }
+        }
+      }
+
+      attempt.status = "completed";
+      attempt.completedAt = new Date();
+      await attempt.save({ validateBeforeSave: false });
+    }
+
     res.json({ message: "Exam submitted successfully" });
   } catch (err) {
     console.error(err);
