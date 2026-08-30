@@ -7,6 +7,7 @@ import Timer from "../components/Timer";
 import ThemeToggle from "../components/ThemeToggle";
 import Navbar from "../components/Navbar";
 import ExamInstructions from "../components/ExamInstructions";
+import PreExamLandingPage from "../components/PreExamLandingPage";
 import { VidyoraLogo } from "../components/VidyoraLogo";
 import { useTheme } from "../context/ThemeContext";
 
@@ -62,6 +63,7 @@ export default function ExamAttempt() {
 
   // Lobby States
   const [isLobby, setIsLobby] = useState(true);
+  const [hasPassedLandingPage, setHasPassedLandingPage] = useState(false);
   const [lobbyData, setLobbyData] = useState(null);
   const [lobbyLoading, setLobbyLoading] = useState(true);
   const [lobbyError, setLobbyError] = useState("");
@@ -884,6 +886,16 @@ export default function ExamAttempt() {
             <p className="font-semibold text-lg">{lobbyError}</p>
           </div>
         </div>
+      );
+    }
+
+    if (settings?.landingPage?.enabled && !hasPassedLandingPage) {
+      return (
+        <PreExamLandingPage
+          config={settings.landingPage}
+          candidateName={candidateNameState || location.state?.candidateName || lobbyData?.candidateName || ""}
+          onContinue={() => setHasPassedLandingPage(true)}
+        />
       );
     }
 

@@ -118,6 +118,36 @@ const exam = new mongoose.Schema(
           icon: { type: String, default: "📜" },
         },
       ],
+
+      // Optional Per-Exam Landing Page Configuration
+      landingPage: {
+        enabled: { type: Boolean, default: false },
+        eventName: { type: String, default: "COMPUTER SOCIETY OF INDIA" },
+        eventTitle: { type: String, default: "CSI ROUND 3" },
+        logo: { type: String, default: "/csi-logo.png" },
+        mainHeading: { type: String, default: "CONGRATULATIONS, CODER!" },
+        subHeading: { type: String, default: "YOU'VE MADE IT TO ROUND 3" },
+        description: { type: String, default: "You successfully cleared Round 2 and earned your place in the next stage of the CSI Selection Process." },
+        motivationalHeading: { type: String, default: "YOU EARNED YOUR SPOT. NOW MAKE IT COUNT." },
+        challengeLabel: { type: String, default: "ROUND 3 — CODING CHALLENGE" },
+        tagline: { type: String, default: "THINK • CODE • SOLVE • CONQUER" },
+        primaryButtonText: { type: String, default: "ENTER ROUND 3 →" },
+        footerText: { type: String, default: "Best of luck! Give it your best shot." },
+        theme: {
+          primaryColor: { type: String, default: "#0052cc" },
+          secondaryColor: { type: String, default: "#002b66" },
+          backgroundColor: { type: String, default: "#0a192f" },
+        },
+        journey: {
+          enabled: { type: Boolean, default: true },
+          stages: [
+            { label: "ROUND 1", status: { type: String, default: "completed" } },
+            { label: "ROUND 2", status: { type: String, default: "cleared" } },
+            { label: "ROUND 3", status: { type: String, default: "current" } },
+            { label: "FINAL SELECTION", status: { type: String, default: "upcoming" } },
+          ],
+        },
+      },
     },
   },
   { timestamps: true }

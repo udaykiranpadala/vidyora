@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "./Button";
 import Input from "./Input";
+import LandingPageConfigurator from "./LandingPageConfigurator";
 
 const parseDateString = (dateString) => {
   if (!dateString) return { date: "", hours: 12, minutes: 0, ampm: "AM" };
@@ -199,6 +200,9 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
     showRank: initialSettings.showRank ?? true,
     hideRank: initialSettings.hideRank ?? false,
     showLeaderboard: initialSettings.showLeaderboard ?? true,
+
+    // Pre-Exam Landing Page Config
+    landingPage: initialSettings.landingPage ?? {},
   });
 
   const handleChange = (key, value) => {
@@ -261,6 +265,7 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
 
   const tabs = [
     { id: "general", label: "General" },
+    { id: "landing_page", label: "🚀 Pre-Exam Landing Page" },
     { id: "instructions", label: "Pre-Exam Instructions" },
     { id: "questions", label: "Questions & UI" },
     { id: "coding", label: "Coding Env" },
@@ -451,6 +456,14 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
               </div>
             </label>
           </div>
+        )}
+
+        {/* Tab: Pre-Exam Landing Page Configurator */}
+        {activeTab === "landing_page" && (
+          <LandingPageConfigurator
+            config={settings.landingPage || {}}
+            onChange={(val) => handleChange("landingPage", val)}
+          />
         )}
 
         {/* Tab: Pre-Exam Instructions Configurator */}
