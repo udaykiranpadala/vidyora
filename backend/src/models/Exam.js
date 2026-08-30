@@ -147,6 +147,16 @@ const exam = new mongoose.Schema(
             },
           ],
         },
+        pillars: {
+          enabled: { type: Boolean, default: true },
+          items: [
+            {
+              icon: { type: String, default: "🧠" },
+              title: { type: String, default: "LOGIC" },
+              description: { type: String, default: "Problem Solving" },
+            },
+          ],
+        },
       },
     },
   },

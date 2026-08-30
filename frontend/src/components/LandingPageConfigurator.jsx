@@ -42,6 +42,17 @@ export default function LandingPageConfigurator({
               { label: "FINAL SELECTION", status: "upcoming" },
             ],
     },
+    pillars: {
+      enabled: config.pillars?.enabled ?? true,
+      items:
+        config.pillars?.items && config.pillars.items.length > 0
+          ? config.pillars.items
+          : [
+              { icon: "🧠", title: "LOGIC", description: "Problem Solving" },
+              { icon: "💻", title: "CODING", description: "Implementation" },
+              { icon: "⚡", title: "SPEED", description: "Accuracy & Precision" },
+            ],
+    },
   };
 
   const updateConfig = (key, value) => {
@@ -94,6 +105,43 @@ export default function LandingPageConfigurator({
       journey: {
         ...landingConfig.journey,
         stages: nextStages,
+      },
+    });
+  };
+
+  const updatePillarItem = (idx, field, val) => {
+    const nextItems = [...landingConfig.pillars.items];
+    nextItems[idx] = { ...nextItems[idx], [field]: val };
+    onChange({
+      ...landingConfig,
+      pillars: {
+        ...landingConfig.pillars,
+        items: nextItems,
+      },
+    });
+  };
+
+  const addPillarItem = () => {
+    const nextItems = [
+      ...landingConfig.pillars.items,
+      { icon: "🎯", title: "SKILL", description: "Assessment Metric" },
+    ];
+    onChange({
+      ...landingConfig,
+      pillars: {
+        ...landingConfig.pillars,
+        items: nextItems,
+      },
+    });
+  };
+
+  const removePillarItem = (idx) => {
+    const nextItems = landingConfig.pillars.items.filter((_, i) => i !== idx);
+    onChange({
+      ...landingConfig,
+      pillars: {
+        ...landingConfig.pillars,
+        items: nextItems,
       },
     });
   };
@@ -464,6 +512,82 @@ export default function LandingPageConfigurator({
                           <button
                             type="button"
                             onClick={() => removeJourneyStage(idx)}
+                            className="text-xs text-danger hover:underline px-1 cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Pillars / Skill Cards Configurator */}
+                <div className="border border-line rounded-xl p-4 bg-card/20 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-ink-secondary">
+                        Skill Cards & Emojis Configurator
+                      </span>
+                      <p className="text-[10px] text-ink-secondary">
+                        Configure card titles, icons/emojis, and descriptions displayed on the landing page.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addPillarItem}
+                      className="text-xs font-bold text-accent hover:underline cursor-pointer"
+                    >
+                      + Add Card
+                    </button>
+                  </div>
+
+                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer my-1">
+                    <input
+                      type="checkbox"
+                      checked={landingConfig.pillars.enabled}
+                      onChange={(e) =>
+                        onChange({
+                          ...landingConfig,
+                          pillars: {
+                            ...landingConfig.pillars,
+                            enabled: e.target.checked,
+                          },
+                        })
+                      }
+                      className="w-4 h-4 rounded border-line text-accent"
+                    />
+                    <span>Show Skill Cards Section</span>
+                  </label>
+
+                  {landingConfig.pillars.enabled && (
+                    <div className="flex flex-col gap-2 mt-1">
+                      {landingConfig.pillars.items.map((pillar, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-paper p-2 rounded-lg border border-line flex-wrap sm:flex-nowrap">
+                          <input
+                            type="text"
+                            value={pillar.icon}
+                            onChange={(e) => updatePillarItem(idx, "icon", e.target.value)}
+                            className="w-12 text-center text-sm font-bold text-ink bg-surface border border-line rounded px-2 py-1 outline-none focus:border-accent"
+                            placeholder="Emoji"
+                          />
+                          <input
+                            type="text"
+                            value={pillar.title}
+                            onChange={(e) => updatePillarItem(idx, "title", e.target.value)}
+                            className="w-32 text-xs font-bold text-ink bg-transparent outline-none px-2 py-1 border border-transparent focus:border-accent rounded"
+                            placeholder="Card Title"
+                          />
+                          <input
+                            type="text"
+                            value={pillar.description}
+                            onChange={(e) => updatePillarItem(idx, "description", e.target.value)}
+                            className="flex-1 text-xs text-ink bg-transparent outline-none px-2 py-1 border border-transparent focus:border-accent rounded"
+                            placeholder="Subtitle / Description"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePillarItem(idx)}
                             className="text-xs text-danger hover:underline px-1 cursor-pointer"
                           >
                             ✕

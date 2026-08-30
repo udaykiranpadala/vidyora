@@ -33,6 +33,18 @@ export default function PreExamLandingPage({
   const primaryColor = config.theme?.primaryColor || "#059669"; // Vidyora Emerald Accent default
   const backgroundColor = config.theme?.backgroundColor || "#0B0F14"; // Vidyora Dark Paper default
 
+  // Pillars / Skill Cards fallback
+  const showPillars = config.pillars?.enabled !== false;
+  const defaultPillars = [
+    { icon: "🧠", title: "LOGIC", description: "Problem Solving" },
+    { icon: "💻", title: "CODING", description: "Implementation" },
+    { icon: "⚡", title: "SPEED", description: "Accuracy & Precision" },
+  ];
+  const pillarsList =
+    config.pillars?.items && config.pillars.items.length > 0
+      ? config.pillars.items
+      : defaultPillars;
+
   // Journey stage fallback
   const showJourney = config.journey?.enabled !== false;
   const defaultStages = [
@@ -246,41 +258,28 @@ export default function PreExamLandingPage({
         )}
 
         {/* 5. Pillars / Skill Cards */}
-        <div
-          className={`grid grid-cols-3 gap-3 sm:gap-6 w-full max-w-2xl my-4 transition-all duration-700 delay-500 transform ${
-            mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
-          }`}
-        >
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1">
-            <span className="text-2xl sm:text-3xl block mb-1">🧠</span>
-            <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
-              Logic
-            </span>
-            <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
-              Problem Solving
-            </span>
+        {showPillars && pillarsList.length > 0 && (
+          <div
+            className={`grid grid-cols-${Math.min(pillarsList.length, 4)} gap-3 sm:gap-6 w-full max-w-2xl my-4 transition-all duration-700 delay-500 transform ${
+              mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+            }`}
+          >
+            {pillarsList.map((pillar, idx) => (
+              <div
+                key={idx}
+                className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1"
+              >
+                <span className="text-2xl sm:text-3xl block mb-1">{pillar.icon || "📌"}</span>
+                <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
+                  {pillar.title}
+                </span>
+                <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
+                  {pillar.description}
+                </span>
+              </div>
+            ))}
           </div>
-
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1">
-            <span className="text-2xl sm:text-3xl block mb-1">💻</span>
-            <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
-              Coding
-            </span>
-            <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
-              Implementation
-            </span>
-          </div>
-
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-md text-center hover:border-emerald-500/40 transition-all hover:-translate-y-1">
-            <span className="text-2xl sm:text-3xl block mb-1">⚡</span>
-            <span className="text-[11px] sm:text-xs font-sans font-bold text-slate-200 block uppercase tracking-wider">
-              Speed
-            </span>
-            <span className="text-[9px] sm:text-[10px] text-slate-400 block mt-0.5">
-              Accuracy & Precision
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* 6. Challenge Banner & Tagline */}
         <div

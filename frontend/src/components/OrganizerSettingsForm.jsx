@@ -499,9 +499,14 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="text-xl p-1.5 bg-paper rounded-lg border border-line shrink-0">
-                        {inst.icon || "📜"}
-                      </span>
+                      <input
+                        type="text"
+                        value={inst.icon || "📜"}
+                        onChange={(e) => handleInstructionChange(idx, "icon", e.target.value)}
+                        className="w-10 text-center text-lg p-1 bg-paper rounded-lg border border-line focus:border-accent outline-none font-bold shrink-0 cursor-pointer"
+                        placeholder="Emoji"
+                        title="Click to edit instruction emoji"
+                      />
                       <input
                         type="text"
                         value={inst.title}
