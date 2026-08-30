@@ -56,13 +56,21 @@ export const joinExam = async (req, res) => {
       return res.status(400).json({ message: "This exam has no questions yet" });
     }
 
-    // Reuse or create attempt if candidate re-joins with the same roll number and name
+    // Reuse or create attempt if candidate re-joins with the same roll number or name
     let attempt;
-    if (candidateRollNumber && candidateRollNumber.trim() !== "") {
+    const cleanRoll = candidateRollNumber ? candidateRollNumber.trim().toUpperCase() : "";
+    const cleanName = candidateName.trim().toUpperCase();
+
+    if (cleanRoll) {
       attempt = await Attempt.findOne({
         exam: exam._id,
-        candidateRollNumber: candidateRollNumber.trim(),
-        candidateName: candidateName.trim(),
+        candidateRollNumber: { $regex: new RegExp(`^${cleanRoll}$`, "i") },
+        status: "in_progress"
+      });
+    } else {
+      attempt = await Attempt.findOne({
+        exam: exam._id,
+        candidateName: { $regex: new RegExp(`^${cleanName}$`, "i") },
         status: "in_progress"
       });
     }
@@ -75,8 +83,8 @@ export const joinExam = async (req, res) => {
 
       attempt = await Attempt.create({
         exam: exam._id,
-        candidateName: candidateName.trim(),
-        candidateRollNumber: candidateRollNumber?.trim() || "",
+        candidateName: cleanName,
+        candidateRollNumber: cleanRoll,
         candidateYear,
         candidateSection: candidateSection.trim(),
         candidateBranch: candidateBranch.trim(),
