@@ -518,7 +518,7 @@ export default function ExamAttempt() {
       }).catch(() => {
         setAutoSaveStatus("Saving failed");
       });
-    }, 15000); // Auto-save database backup every 15s
+    }, 60000); // Background database sync every 60s (prevents DB overload while local storage saves instantly)
 
     return () => clearInterval(autoSaveTimerRef.current);
   }, [loading, question, code, language, selectedOption, isOnline, attemptId]);
@@ -997,23 +997,24 @@ export default function ExamAttempt() {
             </div>
           )}
 
-          {/* Global Timer Display */}
-          <div className={`flex items-center gap-1 sm:gap-2 font-mono text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border shrink-0 ${
-            globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
-          }`} title="Total Exam Time Remaining">
-            <span className="text-xs">⏱</span>
-            <span>{formatTime(globalTimeLeft)}</span>
-          </div>
-
-          {/* Per-question timer */}
-          {!loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
-            <Timer
-              totalSeconds={question.timerSeconds}
-              questionKey={question._id}
-              onExpire={handleQuestionTimerExpire}
-              className="shrink-0"
-              compact={window.innerWidth < 640}
-            />
+          {/* Single Timer Display: Show ONLY Per-Question Timer if enablePerQuestionTimer is true, else show Global Exam Timer */}
+          {!settings.enablePerQuestionTimer ? (
+            <div className={`flex items-center gap-1 sm:gap-2 font-mono text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border shrink-0 ${
+              globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
+            }`} title="Total Exam Time Remaining">
+              <span className="text-xs">⏱</span>
+              <span>{formatTime(globalTimeLeft)}</span>
+            </div>
+          ) : (
+            !loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
+              <Timer
+                totalSeconds={question.timerSeconds}
+                questionKey={question._id}
+                onExpire={handleQuestionTimerExpire}
+                className="shrink-0"
+                compact={window.innerWidth < 640}
+              />
+            )
           )}
 
           <div className="text-xs text-ink-secondary hidden lg:block font-mono bg-card px-2.5 py-1.5 border border-line rounded-xl">
@@ -1394,19 +1395,22 @@ export default function ExamAttempt() {
 
                 {/* Persistent Mobile Timer in Tab Bar */}
                 <div className="flex items-center gap-1.5 shrink-0 ml-auto font-mono text-xs">
-                  <div className={`flex items-center gap-1 font-bold px-2 py-1 rounded-lg border ${
-                    globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
-                  }`} title="Exam Time Remaining">
-                    <span className="text-[10px]">⏱</span>
-                    <span>{formatTime(globalTimeLeft)}</span>
-                  </div>
-                  {!loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
-                    <Timer
-                      totalSeconds={question.timerSeconds}
-                      questionKey={question._id}
-                      onExpire={handleQuestionTimerExpire}
-                      compact
-                    />
+                  {!settings.enablePerQuestionTimer ? (
+                    <div className={`flex items-center gap-1 font-bold px-2 py-1 rounded-lg border ${
+                      globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
+                    }`} title="Exam Time Remaining">
+                      <span className="text-[10px]">⏱</span>
+                      <span>{formatTime(globalTimeLeft)}</span>
+                    </div>
+                  ) : (
+                    !loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
+                      <Timer
+                        totalSeconds={question.timerSeconds}
+                        questionKey={question._id}
+                        onExpire={handleQuestionTimerExpire}
+                        compact
+                      />
+                    )
                   )}
                 </div>
               </div>
@@ -1529,20 +1533,23 @@ export default function ExamAttempt() {
                         {settings.enableFullScreen ? "Code Editor" : "Monaco Editor"} [Fullscreen] - {language.toUpperCase()}
                       </span>
                       <div className="flex items-center gap-2">
-                        {/* Global Timer Display in Fullscreen Mode */}
-                        <div className={`flex items-center gap-1 font-mono text-xs font-bold px-2 py-1 rounded-lg border ${
-                          globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
-                        }`} title="Exam Time Remaining">
-                          <span className="text-[10px]">⏱</span>
-                          <span>{formatTime(globalTimeLeft)}</span>
-                        </div>
-                        {!loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
-                          <Timer
-                            totalSeconds={question.timerSeconds}
-                            questionKey={question._id}
-                            onExpire={handleQuestionTimerExpire}
-                            compact
-                          />
+                        {/* Timer Display in Fullscreen Mode */}
+                        {!settings.enablePerQuestionTimer ? (
+                          <div className={`flex items-center gap-1 font-mono text-xs font-bold px-2 py-1 rounded-lg border ${
+                            globalTimeLeft <= 300 ? "bg-danger-soft border-danger text-danger animate-pulse" : "bg-card border-line text-ink"
+                          }`} title="Exam Time Remaining">
+                            <span className="text-[10px]">⏱</span>
+                            <span>{formatTime(globalTimeLeft)}</span>
+                          </div>
+                        ) : (
+                          !loading && question?.timerSeconds > 0 && (!settings.singleQuestionMode || currentQuestionOpen) && (
+                            <Timer
+                              totalSeconds={question.timerSeconds}
+                              questionKey={question._id}
+                              onExpire={handleQuestionTimerExpire}
+                              compact
+                            />
+                          )
                         )}
                         <Button variant="secondary" onClick={toggleEditorFullscreen} className="px-3 py-1 text-xs">Exit Fullscreen</Button>
                       </div>
