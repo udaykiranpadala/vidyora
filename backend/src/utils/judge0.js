@@ -274,13 +274,17 @@ export const runAgainstTestCases = async (sourceCode, language, testCases) => {
 
   while (!allFinished && attempts < maxAttempts) {
     try {
+      const activeHeaders = activeApiUrl.includes("ce.judge0.com")
+        ? { "Content-Type": "application/json" }
+        : judge0Headers;
+
       const getRes = await axios.get(`${activeApiUrl}/submissions/batch`, {
         params: {
           tokens: submissionTokens.join(","),
           base64_encoded: "true",
           fields: "status_id,status,stdout,stderr,compile_output,time,memory,exit_code",
         },
-        headers: judge0Headers,
+        headers: activeHeaders,
         timeout: 15000
       });
 
