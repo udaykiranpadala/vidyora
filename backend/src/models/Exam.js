@@ -141,10 +141,10 @@ const exam = new mongoose.Schema(
         journey: {
           enabled: { type: Boolean, default: true },
           stages: [
-            { label: "ROUND 1", status: { type: String, default: "completed" } },
-            { label: "ROUND 2", status: { type: String, default: "cleared" } },
-            { label: "ROUND 3", status: { type: String, default: "current" } },
-            { label: "FINAL SELECTION", status: { type: String, default: "upcoming" } },
+            {
+              label: { type: String, default: "" },
+              status: { type: String, default: "upcoming" },
+            },
           ],
         },
       },
