@@ -177,6 +177,9 @@ export const reorderQuestions = async (req, res) => {
       )
     );
 
+    exam.questions = orderedQuestionIds;
+    await exam.save();
+
     res.json({ message: "Order updated" });
   } catch (err) {
     console.error(err);

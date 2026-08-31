@@ -73,13 +73,40 @@ export const joinExam = async (req, res) => {
         candidateName: { $regex: new RegExp(`^${cleanName}$`, "i") },
         status: "in_progress"
       });
-    }
-
     if (!attempt) {
       const remainingTimes = {};
       questions.forEach((q) => {
         remainingTimes[q._id.toString()] = q.timerSeconds;
       });
+
+      const shuffleArray = (array) => {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      };
+
+      const { shuffleMcqs, shuffleCoding, shuffleAllQuestions } = exam.settings || {};
+      let orderedQuestions = [...questions];
+
+      if (shuffleAllQuestions || (shuffleMcqs && shuffleCoding)) {
+        // Shuffle ALL questions (both MCQ and Coding together)
+        orderedQuestions = shuffleArray(orderedQuestions);
+      } else if (shuffleMcqs) {
+        // Shuffle MCQ questions only
+        const mcqQs = shuffleArray(orderedQuestions.filter((q) => q.type === "mcq"));
+        let mcqIdx = 0;
+        orderedQuestions = orderedQuestions.map((q) => (q.type === "mcq" ? mcqQs[mcqIdx++] : q));
+      } else if (shuffleCoding) {
+        // Shuffle Coding questions only
+        const codingQs = shuffleArray(orderedQuestions.filter((q) => q.type === "coding"));
+        let codingIdx = 0;
+        orderedQuestions = orderedQuestions.map((q) => (q.type === "coding" ? codingQs[codingIdx++] : q));
+      }
+
+      const questionOrderIds = orderedQuestions.map((q) => q._id);
 
       attempt = await Attempt.create({
         exam: exam._id,
@@ -89,6 +116,7 @@ export const joinExam = async (req, res) => {
         candidateSection: candidateSection.trim(),
         candidateBranch: candidateBranch.trim(),
         questionRemainingTimes: remainingTimes,
+        questionOrder: questionOrderIds,
       });
     }
 
@@ -108,7 +136,7 @@ export const joinExam = async (req, res) => {
 };
 
 // Helper - shapes a question for the test-taker, hiding answer-revealing fields
-const sanitizeQuestionForCandidate = (question) => {
+const sanitizeQuestionForCandidate = (question, shuffleOptions = false, attemptId = null) => {
   const base = {
     _id: question._id,
     type: question.type,
@@ -119,9 +147,33 @@ const sanitizeQuestionForCandidate = (question) => {
   };
 
   if (question.type === "mcq") {
+    let optionsToExpose = question.options.map((o, idx) => ({
+      text: o.text,
+      originalIndex: idx,
+    }));
+
+    if (shuffleOptions && attemptId && optionsToExpose.length > 1) {
+      // Deterministic pseudo-random shuffle for MCQ options per attempt session
+      const seedStr = attemptId.toString() + question._id.toString();
+      let seedNum = 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        seedNum = (seedNum << 5) - seedNum + seedStr.charCodeAt(i);
+        seedNum |= 0;
+      }
+      let currentSeed = Math.abs(seedNum) || 1;
+      const pseudoRandom = () => {
+        const x = Math.sin(currentSeed++) * 10000;
+        return x - Math.floor(x);
+      };
+      for (let i = optionsToExpose.length - 1; i > 0; i--) {
+        const j = Math.floor(pseudoRandom() * (i + 1));
+        [optionsToExpose[i], optionsToExpose[j]] = [optionsToExpose[j], optionsToExpose[i]];
+      }
+    }
+
     return {
       ...base,
-      options: question.options.map((o) => ({ text: o.text })), // isCorrect stripped
+      options: optionsToExpose,
     };
   }
 
@@ -169,8 +221,22 @@ export const getQuestionForAttempt = async (req, res) => {
 
     const idx = parseInt(index, 10);
 
-    // Fetch all questions for this exam sorted by order
-    const allQuestionsFull = await Question.find({ exam: attempt.exam }).sort({ order: 1 });
+    // Fetch all questions for this exam
+    let allQuestionsFull = await Question.find({ exam: attempt.exam }).sort({ order: 1 });
+
+    // Order according to candidate attempt's questionOrder if available
+    if (attempt.questionOrder && attempt.questionOrder.length > 0) {
+      const orderMap = new Map();
+      attempt.questionOrder.forEach((id, i) => {
+        orderMap.set(id.toString(), i);
+      });
+      allQuestionsFull.sort((a, b) => {
+        const posA = orderMap.has(a._id.toString()) ? orderMap.get(a._id.toString()) : 9999;
+        const posB = orderMap.has(b._id.toString()) ? orderMap.get(b._id.toString()) : 9999;
+        return posA - posB;
+      });
+    }
+
     const totalQuestionsCount = allQuestionsFull.length;
     const currentQuestion = allQuestionsFull[idx];
 
@@ -189,7 +255,7 @@ export const getQuestionForAttempt = async (req, res) => {
     }));
 
     res.json({
-      question: sanitizeQuestionForCandidate(currentQuestion),
+      question: sanitizeQuestionForCandidate(currentQuestion, exam?.settings?.shuffleOptions, attempt._id),
       questionIndex: idx,
       totalQuestions: totalQuestionsCount,
       settings: exam?.settings || {},

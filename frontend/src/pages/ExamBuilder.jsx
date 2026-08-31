@@ -36,8 +36,55 @@ export default function ExamBuilder() {
   const [deleting, setDeleting] = useState(false);
   const [batchTag, setBatchTag] = useState("");
   const [duplicating, setDuplicating] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [settingsSuccessMessage, setSettingsSuccessMessage] = useState("");
+
+  // Reorder / Position state
+  const [reordering, setReordering] = useState(false);
+  const [showReorderModal, setShowReorderModal] = useState(false);
+  const [draftPositions, setDraftPositions] = useState([]);
+
+  const openReorderModal = () => {
+    setDraftPositions(questions.map((q, idx) => ({ ...q, targetPos: idx + 1 })));
+    setShowReorderModal(true);
+  };
+
+  const handleMoveQuestion = async (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= questions.length || fromIndex === toIndex) return;
+
+    const updated = [...questions];
+    const [movedItem] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, movedItem);
+
+    setQuestions(updated);
+
+    try {
+      setReordering(true);
+      const orderedIds = updated.map((q) => q._id);
+      await examApi.reorderQuestions(examId, orderedIds);
+    } catch (err) {
+      console.error("Failed to update question order:", err);
+      load();
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleSaveBulkPositions = async () => {
+    const sorted = [...draftPositions].sort((a, b) => a.targetPos - b.targetPos);
+    setQuestions(sorted);
+    setShowReorderModal(false);
+
+    try {
+      setReordering(true);
+      const orderedIds = sorted.map((q) => q._id);
+      await examApi.reorderQuestions(examId, orderedIds);
+    } catch (err) {
+      console.error("Failed to bulk save question positions:", err);
+      load();
+    } finally {
+      setReordering(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -545,8 +592,22 @@ export default function ExamBuilder() {
 
             {/* Questions list */}
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-sm font-bold uppercase tracking-wider text-ink-secondary">Questions List</h2>
-              <Button onClick={() => setShowTypePicker(true)} className="px-4 py-2 text-xs font-bold">+ Add question</Button>
+              <div>
+                <h2 className="font-display text-sm font-bold uppercase tracking-wider text-ink-secondary">Questions List</h2>
+                <p className="text-[11px] text-ink-secondary mt-0.5">Change question numbers or positions anytime using the controls on each card.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {questions.length > 1 && (
+                  <button
+                    onClick={openReorderModal}
+                    className="px-3 py-1.5 text-xs font-bold border border-line rounded-xl bg-surface hover:bg-surface-elevated text-ink transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>⇄</span>
+                    <span>Change Positions</span>
+                  </button>
+                )}
+                <Button onClick={() => setShowTypePicker(true)} className="px-4 py-2 text-xs font-bold">+ Add question</Button>
+              </div>
             </div>
 
             {questions.length === 0 ? (
@@ -560,9 +621,46 @@ export default function ExamBuilder() {
                     key={q._id}
                     className="bg-surface border border-line rounded-xl p-4 flex items-center gap-4 hover:border-accent/40 transition-colors"
                   >
-                    <span className="text-ink-secondary font-mono text-xs w-6 shrink-0">
-                      {idx + 1}
-                    </span>
+                    {/* Position Selector & Up/Down Arrows */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          type="button"
+                          disabled={idx === 0 || reordering}
+                          onClick={() => handleMoveQuestion(idx, idx - 1)}
+                          title="Move Up (Decrease Question Number)"
+                          className="px-1.5 py-0.5 rounded text-[10px] text-ink-secondary hover:text-accent hover:bg-accent/10 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-secondary cursor-pointer"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === questions.length - 1 || reordering}
+                          onClick={() => handleMoveQuestion(idx, idx + 1)}
+                          title="Move Down (Increase Question Number)"
+                          className="px-1.5 py-0.5 rounded text-[10px] text-ink-secondary hover:text-accent hover:bg-accent/10 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-secondary cursor-pointer"
+                        >
+                          ▼
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-surface-elevated border border-line rounded-lg px-2 py-1">
+                        <span className="text-[10px] uppercase font-bold text-ink-secondary">Pos</span>
+                        <select
+                          value={idx + 1}
+                          disabled={reordering}
+                          onChange={(e) => handleMoveQuestion(idx, parseInt(e.target.value, 10) - 1)}
+                          className="bg-transparent text-ink font-mono font-bold text-xs cursor-pointer focus:outline-none"
+                        >
+                          {questions.map((_, pIdx) => (
+                            <option key={pIdx + 1} value={pIdx + 1}>
+                              #{pIdx + 1}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     <Badge variant={q.type}>{q.type === "mcq" ? "MCQ" : "Coding"}</Badge>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-ink text-sm truncate">{q.title}</p>
@@ -911,6 +1009,57 @@ export default function ExamBuilder() {
           onCancel={closeForm}
           submitting={submitting}
         />
+      </Modal>
+
+      {/* Bulk Position Reorder Modal */}
+      <Modal
+        open={showReorderModal}
+        onClose={() => setShowReorderModal(false)}
+        title="Change Question Positions"
+        maxWidth="max-w-lg"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-xs text-ink-secondary">
+            Set the exact position/number for each question below. Questions will be sorted automatically by position.
+          </p>
+
+          <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto pr-1">
+            {draftPositions.map((item, itemIdx) => (
+              <div key={item._id} className="flex items-center justify-between border border-line rounded-xl p-3 bg-surface">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <Badge variant={item.type}>{item.type === "mcq" ? "MCQ" : "Coding"}</Badge>
+                  <span className="font-medium text-xs text-ink truncate">{item.title}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-ink-secondary font-semibold">Position:</span>
+                  <select
+                    value={item.targetPos}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setDraftPositions(draftPositions.map((dp, i) => i === itemIdx ? { ...dp, targetPos: val } : dp));
+                    }}
+                    className="bg-surface-elevated border border-line rounded-lg px-2 py-1 text-xs font-mono font-bold text-ink cursor-pointer"
+                  >
+                    {questions.map((_, pIdx) => (
+                      <option key={pIdx + 1} value={pIdx + 1}>
+                        #{pIdx + 1}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
+            <Button variant="secondary" onClick={() => setShowReorderModal(false)} className="px-4 py-2 text-xs">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveBulkPositions} className="px-4 py-2 text-xs font-bold">
+              Save New Positions
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       {/* Delete Confirmation Modal */}

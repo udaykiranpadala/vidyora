@@ -76,6 +76,8 @@ const exam = new mongoose.Schema(
       sequentialNavigation: { type: Boolean, default: false },
       randomNavigation: { type: Boolean, default: true },
       shuffleMcqs: { type: Boolean, default: false },
+      shuffleCoding: { type: Boolean, default: false },
+      shuffleAllQuestions: { type: Boolean, default: false },
       shuffleOptions: { type: Boolean, default: false },
       lockQuestions: { type: Boolean, default: false },
       allowQuestionReview: { type: Boolean, default: true },

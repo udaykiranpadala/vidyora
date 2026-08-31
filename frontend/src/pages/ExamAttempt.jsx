@@ -1257,12 +1257,13 @@ export default function ExamAttempt() {
 
                 <div className="flex flex-col gap-3">
                   {question.options.map((opt, idx) => {
-                    const isSelected = selectedOption === idx;
+                    const targetOptionIndex = opt.originalIndex ?? idx;
+                    const isSelected = selectedOption === targetOptionIndex;
                     return (
                       <button
                         key={idx}
                         disabled={isQuestionTimeExpired}
-                        onClick={() => setSelectedOption(idx)}
+                        onClick={() => setSelectedOption(targetOptionIndex)}
                         className={`text-left px-5 py-4 rounded-xl border transition-all flex items-center gap-4 ${
                           isQuestionTimeExpired 
                             ? "opacity-60 border-line bg-surface cursor-not-allowed" 

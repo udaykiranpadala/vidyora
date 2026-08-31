@@ -170,6 +170,8 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
     sequentialNavigation: initialSettings.sequentialNavigation ?? false,
     randomNavigation: initialSettings.randomNavigation ?? true,
     shuffleMcqs: initialSettings.shuffleMcqs ?? false,
+    shuffleCoding: initialSettings.shuffleCoding ?? false,
+    shuffleAllQuestions: initialSettings.shuffleAllQuestions ?? false,
     shuffleOptions: initialSettings.shuffleOptions ?? false,
     lockQuestions: initialSettings.lockQuestions ?? false,
     allowQuestionReview: initialSettings.allowQuestionReview ?? true,
@@ -740,7 +742,7 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
               </div>
 
               <h3 className="font-semibold text-xs uppercase tracking-wider text-ink-secondary mt-3">
-                Shuffling
+                Shuffling Settings
               </h3>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -750,6 +752,27 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
                   className="w-4 h-4 rounded border-line text-accent focus:ring-accent"
                 />
                 <span className="text-sm">Shuffle MCQ Questions Order</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.shuffleCoding}
+                  onChange={(e) => handleChange("shuffleCoding", e.target.checked)}
+                  className="w-4 h-4 rounded border-line text-accent focus:ring-accent"
+                />
+                <span className="text-sm">Shuffle Coding Questions Order</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer p-2 bg-accent/5 border border-accent/20 rounded-lg">
+                <input
+                  type="checkbox"
+                  checked={settings.shuffleAllQuestions}
+                  onChange={(e) => handleChange("shuffleAllQuestions", e.target.checked)}
+                  className="w-4 h-4 rounded border-line text-accent focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-semibold text-accent">Shuffle Both MCQ & Coding Questions</span>
+                  <p className="text-[11px] text-ink-secondary">Randomly mixes all questions (both MCQ and Coding together) for each candidate.</p>
+                </div>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input

@@ -91,6 +91,12 @@ const attemptSchema = new mongoose.Schema(
       of: Number,
       default: {},
     },
+    questionOrder: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Question",
+      },
+    ],
   },
   { timestamps: true }
 );
