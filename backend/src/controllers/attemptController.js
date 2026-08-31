@@ -73,6 +73,8 @@ export const joinExam = async (req, res) => {
         candidateName: { $regex: new RegExp(`^${cleanName}$`, "i") },
         status: "in_progress"
       });
+    }
+
     if (!attempt) {
       const remainingTimes = {};
       questions.forEach((q) => {
