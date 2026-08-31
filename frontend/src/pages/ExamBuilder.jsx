@@ -36,6 +36,7 @@ export default function ExamBuilder() {
   const [deleting, setDeleting] = useState(false);
   const [batchTag, setBatchTag] = useState("");
   const [duplicating, setDuplicating] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [settingsSuccessMessage, setSettingsSuccessMessage] = useState("");
 
   // Reorder / Position state
