@@ -154,6 +154,9 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
     enablePerQuestionTimer: initialSettings.enablePerQuestionTimer ?? false,
     questionListDisplayFormat: initialSettings.questionListDisplayFormat ?? "number_title_points",
     showTimerInQuestionList: initialSettings.showTimerInQuestionList ?? true,
+    enableTimeWarning: initialSettings.enableTimeWarning ?? true,
+    timeWarningMinutes: initialSettings.timeWarningMinutes ?? 5,
+    timeWarningCount: initialSettings.timeWarningCount ?? 1,
     
     // UI & Question Settings
     showQuestionNumbers: initialSettings.showQuestionNumbers ?? true,
@@ -692,6 +695,54 @@ export default function OrganizerSettingsForm({ initialSettings = {}, onSave, on
                     </div>
                   </label>
                 )}
+
+                {/* Time Ending Warning Popup Configuration */}
+                <div className="flex flex-col gap-3 pt-3 border-t border-line/40">
+                  <label className="text-xs font-bold uppercase tracking-wider text-ink-secondary">
+                    Time Warning Popup Settings
+                  </label>
+                  <p className="text-[11px] text-ink-secondary">
+                    Configure alert popups shown to candidates as exam time runs out.
+                  </p>
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.enableTimeWarning}
+                      onChange={(e) => handleChange("enableTimeWarning", e.target.checked)}
+                      className="w-4 h-4 rounded border-line text-accent focus:ring-accent mt-0.5"
+                    />
+                    <div>
+                      <span className="text-sm font-medium">Enable Remaining Time Warning Popup</span>
+                      <p className="text-[11px] text-ink-secondary leading-relaxed mt-0.5">
+                        If enabled, candidates receive a popup alert when remaining exam time reaches the specified threshold. If disabled, no time warning popup will appear.
+                      </p>
+                    </div>
+                  </label>
+
+                  {settings.enableTimeWarning && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1 p-3.5 rounded-xl border border-line bg-card/25">
+                      <Input
+                        label="Warning Trigger Time (Minutes Remaining)"
+                        type="number"
+                        min={1}
+                        max={settings.duration || 120}
+                        value={settings.timeWarningMinutes}
+                        onChange={(e) => handleChange("timeWarningMinutes", Math.max(1, parseInt(e.target.value) || 1))}
+                        placeholder="e.g. 5"
+                      />
+                      <Input
+                        label="Maximum Popup Show Count"
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={settings.timeWarningCount}
+                        onChange={(e) => handleChange("timeWarningCount", Math.max(1, parseInt(e.target.value) || 1))}
+                        placeholder="e.g. 1"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col gap-3 mt-1">

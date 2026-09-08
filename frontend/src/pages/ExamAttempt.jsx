@@ -122,6 +122,9 @@ export default function ExamAttempt() {
   const autoSaveTimerRef = useRef(null);
   const editorRef = useRef(null);
   const submitAnswerDraftRef = useRef(null);
+  const timeWarningShownCountRef = useRef(
+    parseInt(sessionStorage.getItem(`time_warning_shown_${attemptId}`) || "0", 10)
+  );
 
   // Sync Monaco editor theme with app theme
   useEffect(() => {
@@ -476,16 +479,33 @@ export default function ExamAttempt() {
           return 0;
         }
 
-        const minutes = Math.round((prev - 1) / 60);
-        if (minutes === 5) {
-          setSecurityModalMsg(`Notice: You have 5 minutes remaining to complete your exam.`);
+        const nextTime = prev - 1;
+
+        // Configurable time warning popup
+        const enableTimeWarning = settings.enableTimeWarning !== false;
+        const warningMinutes = Number(settings.timeWarningMinutes) || 5;
+        const maxCount = Number(settings.timeWarningCount) || 1;
+
+        if (enableTimeWarning && maxCount > 0) {
+          const warningSeconds = warningMinutes * 60;
+          if (nextTime <= warningSeconds && nextTime > 0 && timeWarningShownCountRef.current < maxCount) {
+            const diff = warningSeconds - nextTime;
+            // Fire popup at exact warning threshold (diff === 0) or every 60 seconds after if maxCount > 1
+            if (diff >= 0 && diff % 60 === 0) {
+              setSecurityModalMsg(`Notice: You have ${warningMinutes} minute${warningMinutes === 1 ? "" : "s"} remaining to complete your exam.`);
+              timeWarningShownCountRef.current += 1;
+              if (attemptId) {
+                sessionStorage.setItem(`time_warning_shown_${attemptId}`, String(timeWarningShownCountRef.current));
+              }
+            }
+          }
         }
 
-        return prev - 1;
+        return nextTime;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [loading]);
+  }, [loading, settings.enableTimeWarning, settings.timeWarningMinutes, settings.timeWarningCount, attemptId]);
 
   // Auto-Save interval
   useEffect(() => {

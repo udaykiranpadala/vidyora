@@ -60,6 +60,9 @@ const exam = new mongoose.Schema(
       enablePerQuestionTimer: { type: Boolean, default: false },
       questionListDisplayFormat: { type: String, default: "number_title_points" },
       showTimerInQuestionList: { type: Boolean, default: true },
+      enableTimeWarning: { type: Boolean, default: true },
+      timeWarningMinutes: { type: Number, default: 5 },
+      timeWarningCount: { type: Number, default: 1 },
 
       // Question Settings
       showQuestionNumbers: { type: Boolean, default: true },
