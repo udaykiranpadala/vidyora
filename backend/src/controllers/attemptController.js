@@ -61,16 +61,18 @@ export const joinExam = async (req, res) => {
     const cleanRoll = candidateRollNumber ? candidateRollNumber.trim().toUpperCase() : "";
     const cleanName = candidateName.trim().toUpperCase();
 
+    const escapeRegex = (string) => (string || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
     if (cleanRoll) {
       attempt = await Attempt.findOne({
         exam: exam._id,
-        candidateRollNumber: { $regex: new RegExp(`^${cleanRoll}$`, "i") },
+        candidateRollNumber: { $regex: new RegExp(`^${escapeRegex(cleanRoll)}$`, "i") },
         status: "in_progress"
       });
     } else {
       attempt = await Attempt.findOne({
         exam: exam._id,
-        candidateName: { $regex: new RegExp(`^${cleanName}$`, "i") },
+        candidateName: { $regex: new RegExp(`^${escapeRegex(cleanName)}$`, "i") },
         status: "in_progress"
       });
     }
