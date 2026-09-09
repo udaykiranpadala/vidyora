@@ -66,11 +66,19 @@ export const joinExam = async (req, res) => {
     if (cleanRoll) {
       attempt = await Attempt.findOne({
         exam: exam._id,
+        candidateRollNumber: cleanRoll,
+        status: "in_progress"
+      }) || await Attempt.findOne({
+        exam: exam._id,
         candidateRollNumber: { $regex: new RegExp(`^${escapeRegex(cleanRoll)}$`, "i") },
         status: "in_progress"
       });
     } else {
       attempt = await Attempt.findOne({
+        exam: exam._id,
+        candidateName: cleanName,
+        status: "in_progress"
+      }) || await Attempt.findOne({
         exam: exam._id,
         candidateName: { $regex: new RegExp(`^${escapeRegex(cleanName)}$`, "i") },
         status: "in_progress"

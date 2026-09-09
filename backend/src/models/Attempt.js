@@ -103,6 +103,7 @@ const attemptSchema = new mongoose.Schema(
 
 attemptSchema.index({ exam: 1, status: 1 });
 attemptSchema.index({ exam: 1, candidateRollNumber: 1, status: 1 });
+attemptSchema.index({ exam: 1, candidateName: 1, status: 1 });
 attemptSchema.index({ exam: 1, status: 1, totalScore: -1, totalTimeSeconds: 1 });
 
 const Attempt = mongoose.model("Attempt", attemptSchema);
