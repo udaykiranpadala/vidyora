@@ -353,7 +353,7 @@ export default function LandingPageConfigurator({
                       placeholder="e.g. Congratulations, {name}!"
                     />
                     <p className="text-[10px] text-ink-secondary mt-1">
-                      💡 Use <code className="bg-card px-1 py-0.5 rounded text-accent font-bold">&#123;name&#125;</code> to insert participant's name (e.g. <span className="italic">Congratulations, &#123;name&#125;!</span>).
+                      💡 Use <code className="bg-card px-1 py-0.5 rounded text-accent font-bold">&#123;name&#125;</code> for participant name. Format with comma (e.g. <span className="italic">CONGRATULATIONS, &#123;name&#125;</span>) or space (e.g. <span className="italic">CONGRATULATIONS &#123;name&#125;</span>). Exact spaces &amp; punctuation are preserved.
                     </p>
                   </div>
                   <Input

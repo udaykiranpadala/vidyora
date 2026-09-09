@@ -61,33 +61,35 @@ export default function PreExamLandingPage({
   // Format participant greeting using organizer template & {name} placeholder
   const formatGreeting = (heading, name) => {
     const rawName = name && name.trim() !== "" ? name.trim().toUpperCase() : "CODER";
-    if (!heading) return `CONGRATULATIONS, ${rawName}`;
+
+    if (!heading || heading.trim() === "") {
+      return `CONGRATULATIONS ${rawName}`;
+    }
 
     let result = heading;
 
     // 1. Explicit placeholder replacement ({name}, {participantName}, {candidateName})
     if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(result)) {
-      result = result.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
-    }
-    // 2. If name is available and heading contains "CODER" or "Coder"
-    else if (name && name.trim() !== "" && /coder/i.test(result)) {
-      result = result.replace(/coder/gi, rawName);
-    }
-    // 3. If heading starts with "Congratulations"
-    else if (name && name.trim() !== "" && /^congratulations/i.test(result.trim())) {
-      const trimmed = result.trim();
-      if (/^congratulations,?\s*$/i.test(trimmed)) {
-        result = `CONGRATULATIONS, ${rawName}!`;
-      } else if (!trimmed.toUpperCase().includes(rawName)) {
-        result = `CONGRATULATIONS, ${rawName}`;
-      }
+      return result.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
     }
 
-    // Ensure proper single space after any comma and prevent glued words
-    result = result
-      .replace(/,\s*/g, ", ")
-      .replace(/\s+/g, " ")
-      .trim();
+    // 2. If name is available and heading contains "CODER" or "Coder" (legacy placeholder)
+    if (name && name.trim() !== "" && /coder/i.test(result)) {
+      return result.replace(/coder/gi, rawName);
+    }
+
+    // 3. If heading does not contain explicit placeholder or "CODER", but candidate name should be appended
+    if (name && name.trim() !== "") {
+      const trimmed = result.trim();
+      if (!trimmed.toUpperCase().includes(rawName)) {
+        if (/,\s*$/.test(trimmed)) {
+          return `${trimmed} ${rawName}`;
+        } else {
+          const space = /\s$/.test(result) ? "" : " ";
+          return `${result}${space}${rawName}`;
+        }
+      }
+    }
 
     return result;
   };
