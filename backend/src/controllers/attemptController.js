@@ -56,7 +56,7 @@ export const joinExam = async (req, res) => {
       return res.status(400).json({ message: "This exam has no questions yet" });
     }
 
-    // Reuse or create attempt if candidate re-joins with the same roll number or name
+    // 1. If candidate has an active attempt in progress -> RESUME from where they stopped
     let attempt;
     const cleanRoll = candidateRollNumber ? candidateRollNumber.trim().toUpperCase() : "";
     const cleanName = candidateName.trim().toUpperCase();
@@ -85,7 +85,30 @@ export const joinExam = async (req, res) => {
       });
     }
 
+    // 2. If candidate has completed the exam and organizer has NOT deleted their result -> BLOCK re-attempt
     if (!attempt) {
+      let completedAttempt;
+      if (cleanRoll) {
+        completedAttempt = await Attempt.findOne({
+          exam: exam._id,
+          candidateRollNumber: { $regex: new RegExp(`^${escapeRegex(cleanRoll)}$`, "i") },
+          status: "completed"
+        });
+      } else {
+        completedAttempt = await Attempt.findOne({
+          exam: exam._id,
+          candidateName: { $regex: new RegExp(`^${escapeRegex(cleanName)}$`, "i") },
+          status: "completed"
+        });
+      }
+
+      if (completedAttempt) {
+        return res.status(403).json({
+          message: "You have already completed this exam. If you need a re-attempt, please contact your organizer to reset your result."
+        });
+      }
+
+      // 3. If no in_progress attempt AND no completed attempt exists (or organizer deleted the result) -> START FRESH
       const remainingTimes = {};
       questions.forEach((q) => {
         remainingTimes[q._id.toString()] = q.timerSeconds;
