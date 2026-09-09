@@ -14,7 +14,7 @@ export default function LandingPageConfigurator({
     eventName: config.eventName ?? "COMPUTER SOCIETY OF INDIA",
     eventTitle: config.eventTitle ?? "CSI ROUND 3",
     logo: config.logo || "/csi-logo.png",
-    mainHeading: config.mainHeading ?? "CONGRATULATIONS, {name}!",
+    mainHeading: config.mainHeading ?? "CONGRATULATIONS  ",
     subHeading: config.subHeading ?? "YOU'VE MADE IT TO ROUND 3",
     description:
       config.description ??
@@ -168,7 +168,7 @@ export default function LandingPageConfigurator({
       eventName: "COMPUTER SOCIETY OF INDIA",
       eventTitle: "CSI ROUND 3",
       logo: "/csi-logo.png",
-      mainHeading: "CONGRATULATIONS, CODER!",
+      mainHeading: "CONGRATULATIONS  ",
       subHeading: "YOU'VE MADE IT TO ROUND 3",
       description:
         "You successfully cleared Round 2 and earned your place in the next stage of the CSI Selection Process.",
@@ -350,10 +350,10 @@ export default function LandingPageConfigurator({
                       label="Main Greeting Heading"
                       value={landingConfig.mainHeading}
                       onChange={(e) => updateConfig("mainHeading", e.target.value)}
-                      placeholder="e.g. Congratulations, {name}!"
+                      placeholder='e.g. CONGRATULATIONS  '
                     />
                     <p className="text-[10px] text-ink-secondary mt-1">
-                      💡 Use <code className="bg-card px-1 py-0.5 rounded text-accent font-bold">&#123;name&#125;</code> for participant name. Format with comma (e.g. <span className="italic">CONGRATULATIONS, &#123;name&#125;</span>) or space (e.g. <span className="italic">CONGRATULATIONS &#123;name&#125;</span>). Exact spaces &amp; punctuation are preserved.
+                      💡 Type your greeting text (e.g. <span className="italic">"CONGRATULATIONS  "</span> for 2 spaces, or <span className="italic">"CONGRATULATIONS, "</span> for comma). Participant's login name is attached automatically!
                     </p>
                   </div>
                   <Input

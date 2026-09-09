@@ -81,37 +81,41 @@ export default function PreExamLandingPage({
     return result;
   };
 
-  // Format participant greeting using organizer template & placeholders
+  // Format participant greeting using organizer template
   const formatGreeting = (heading, name) => {
     if (!heading || heading.trim() === "") {
-      return `CONGRATULATIONS ${rawName}`;
+      return `CONGRATULATIONS  ${rawName}`;
     }
 
     let result = heading;
-    const replaced = replacePlaceholders(result);
 
-    // 1. Explicit placeholder replacement ({name})
+    // 1. If organizer explicitly used {name} (optional)
     if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(result)) {
-      return replaced;
+      return replacePlaceholders(result);
     }
 
-    result = replaced;
+    // 2. Replace other placeholders like {exam}, {event}
+    result = replacePlaceholders(result);
 
-    // 2. If name is available and heading contains "CODER" or "Coder" (legacy placeholder)
+    // 3. Legacy placeholder "CODER"
     if (name && name.trim() !== "" && /coder/i.test(result)) {
       return result.replace(/coder/gi, rawName);
     }
 
-    // 3. If heading does not contain explicit placeholder or "CODER", but candidate name should be appended
+    // 4. Automatically attach candidate name to whatever text/spaces/comma the organizer typed!
     if (name && name.trim() !== "") {
-      const trimmed = result.trim();
-      if (!trimmed.toUpperCase().includes(rawName)) {
-        if (/,\s*$/.test(trimmed)) {
-          return `${trimmed} ${rawName}`;
-        } else {
-          const space = /\s$/.test(result) ? "" : " ";
-          return `${result}${space}${rawName}`;
+      const upperRes = result.toUpperCase();
+      if (!upperRes.includes(rawName)) {
+        // If organizer included trailing spaces (e.g. "CONGRATULATIONS  ")
+        if (/\s+$/.test(result)) {
+          return `${result}${rawName}`;
         }
+        // If organizer included a comma at the end (e.g. "CONGRATULATIONS,")
+        if (/,$/.test(result)) {
+          return `${result} ${rawName}`;
+        }
+        // Default to 2 spaces gap if no trailing space or comma was entered by organizer!
+        return `${result}  ${rawName}`;
       }
     }
 
@@ -228,7 +232,7 @@ export default function PreExamLandingPage({
             mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
           }`}
         >
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mt-1 mb-2 font-display bg-clip-text text-transparent bg-gradient-to-b from-white via-slate-100 to-slate-300">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mt-1 mb-2 font-display bg-clip-text text-transparent bg-gradient-to-b from-white via-slate-100 to-slate-300 whitespace-pre-wrap">
             {greetingText}
           </h1>
 
