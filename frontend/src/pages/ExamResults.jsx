@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../api/client";
 import Badge from "../components/Badge";
 import ThemeToggle from "../components/ThemeToggle";
+import LightningLoader from "../components/LightningLoader";
 
 export default function ExamResults() {
   const { examId } = useParams();
@@ -84,9 +85,8 @@ export default function ExamResults() {
             <ThemeToggle />
           </div>
         </header>
-        <div className="flex-1 flex flex-col items-center justify-center text-ink gap-3">
-          <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-mono text-xs tracking-wider text-ink-secondary animate-pulse">LOADING CANDIDATE RESULTS...</p>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <LightningLoader fullScreen={false} text="LOADING CANDIDATE RESULTS..." size="md" />
         </div>
       </div>
     );

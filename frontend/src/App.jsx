@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import api from "./api/client";
+import LightningLoader from "./components/LightningLoader";
 
 // Lazy load route components for fast initial load performance
 const Landing = lazy(() => import("./pages/Landing"));
@@ -17,14 +18,7 @@ const ExamAttempt = lazy(() => import("./pages/ExamAttempt"));
 const ExamComplete = lazy(() => import("./pages/ExamComplete"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 
-const PageLoader = () => (
-  <div className="min-h-screen bg-paper flex flex-col items-center justify-center gap-3">
-    <div className="w-9 h-9 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-    <span className="text-xs font-mono font-bold text-accent tracking-wider uppercase animate-pulse">
-      Loading Vidyora...
-    </span>
-  </div>
-);
+const PageLoader = () => <LightningLoader fullScreen={true} text="LOADING VIDYORA..." size="md" />;
 
 function App() {
   useEffect(() => {

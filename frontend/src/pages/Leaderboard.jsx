@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { attemptApi } from "../api/attempts";
 import Navbar from "../components/Navbar";
 
+import LightningLoader from "../components/LightningLoader";
+
 const MEDAL = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
 export default function Leaderboard() {
@@ -30,9 +32,8 @@ export default function Leaderboard() {
     return (
       <div className="min-h-screen bg-paper flex flex-col">
         <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center text-ink gap-4">
-          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-mono text-sm tracking-wider animate-pulse">RETRIEVING LEADERBOARD DATA...</p>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <LightningLoader fullScreen={false} text="RETRIEVING LEADERBOARD DATA..." size="md" />
         </div>
       </div>
     );

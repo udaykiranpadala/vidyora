@@ -8,6 +8,7 @@ import Badge from "../components/Badge";
 import Input from "../components/Input";
 import McqForm from "../components/McqForm";
 import CodingForm from "../components/CodingForm";
+import LightningLoader from "../components/LightningLoader";
 import OrganizerSettingsForm from "../components/OrganizerSettingsForm";
 
 export default function ExamBuilder() {
@@ -373,9 +374,8 @@ export default function ExamBuilder() {
     return (
       <div className="min-h-screen bg-paper flex flex-col">
         <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center text-ink gap-4">
-          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-mono text-sm tracking-wider animate-pulse">LOADING ASSESSMENT ENVIRONMENT...</p>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <LightningLoader fullScreen={false} text="LOADING ASSESSMENT ENVIRONMENT..." size="md" />
         </div>
       </div>
     );
