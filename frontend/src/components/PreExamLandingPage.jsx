@@ -61,24 +61,35 @@ export default function PreExamLandingPage({
   // Format participant greeting using organizer template & {name} placeholder
   const formatGreeting = (heading, name) => {
     const rawName = name && name.trim() !== "" ? name.trim().toUpperCase() : "CODER";
-    if (!heading) return `CONGRATULATIONS ${rawName}`;
+    if (!heading) return `CONGRATULATIONS, ${rawName}`;
+
+    let result = heading;
 
     // 1. Explicit placeholder replacement ({name}, {participantName}, {candidateName})
-    if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(heading)) {
-      return heading.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
+    if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(result)) {
+      result = result.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
     }
-
     // 2. If name is available and heading contains "CODER" or "Coder"
-    if (name && name.trim() !== "" && /coder/i.test(heading)) {
-      return heading.replace(/coder/gi, rawName);
+    else if (name && name.trim() !== "" && /coder/i.test(result)) {
+      result = result.replace(/coder/gi, rawName);
     }
-
     // 3. If heading starts with "Congratulations"
-    if (name && name.trim() !== "" && /^congratulations/i.test(heading.trim())) {
-      return `CONGRATULATIONS ${rawName}`;
+    else if (name && name.trim() !== "" && /^congratulations/i.test(result.trim())) {
+      const trimmed = result.trim();
+      if (/^congratulations,?\s*$/i.test(trimmed)) {
+        result = `CONGRATULATIONS, ${rawName}!`;
+      } else if (!trimmed.toUpperCase().includes(rawName)) {
+        result = `CONGRATULATIONS, ${rawName}`;
+      }
     }
 
-    return heading;
+    // Ensure proper single space after any comma and prevent glued words
+    result = result
+      .replace(/,\s*/g, ", ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return result;
   };
 
   const greetingText = formatGreeting(mainHeading, candidateName);
