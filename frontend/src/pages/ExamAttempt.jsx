@@ -10,6 +10,7 @@ import ExamInstructions from "../components/ExamInstructions";
 import PreExamLandingPage from "../components/PreExamLandingPage";
 import { VidyoraLogo } from "../components/VidyoraLogo";
 import { useTheme } from "../context/ThemeContext";
+import LightningLoader from "../components/LightningLoader";
 
 const MONACO_LANG_MAP = {
   c: "c",
@@ -841,10 +842,7 @@ export default function ExamAttempt() {
 
   if (!isLobby && loading) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col items-center justify-center text-ink gap-4">
-        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-mono text-sm tracking-wider animate-pulse">SETTING UP ASSESSMENT ENVIRONMENT...</p>
-      </div>
+      <LightningLoader fullScreen={true} text="SETTING UP ASSESSMENT ENVIRONMENT..." size="md" />
     );
   }
 
@@ -891,10 +889,7 @@ export default function ExamAttempt() {
   if (isLobby) {
     if (lobbyLoading) {
       return (
-        <div className="min-h-screen bg-paper flex flex-col items-center justify-center text-ink gap-4">
-          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-mono text-sm tracking-wider animate-pulse">PREPARING ASSESSMENT LOBBY...</p>
-        </div>
+        <LightningLoader fullScreen={true} text="PREPARING ASSESSMENT LOBBY..." size="md" />
       );
     }
 
@@ -1694,9 +1689,8 @@ export default function ExamAttempt() {
                       // Run outcomes output console
                       <div className="flex flex-col h-full">
                         {running ? (
-                          <div className="flex flex-col items-center justify-center py-10 gap-3 text-ink-secondary">
-                            <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-xs tracking-wider uppercase font-semibold animate-pulse text-accent">Running code against compiler...</p>
+                          <div className="flex flex-col items-center justify-center py-8">
+                            <LightningLoader fullScreen={false} text="RUNNING CODE AGAINST COMPILER..." size="sm" />
                           </div>
                         ) : runResults ? (
                           runResults.length === 0 ? (
