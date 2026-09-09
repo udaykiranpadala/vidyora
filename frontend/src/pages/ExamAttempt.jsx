@@ -910,6 +910,7 @@ export default function ExamAttempt() {
         <PreExamLandingPage
           config={settings.landingPage}
           candidateName={candidateNameState || location.state?.candidateName || lobbyData?.candidateName || ""}
+          examTitle={lobbyData?.examTitle || settings?.examTitle || ""}
           onContinue={() => setHasPassedLandingPage(true)}
         />
       );

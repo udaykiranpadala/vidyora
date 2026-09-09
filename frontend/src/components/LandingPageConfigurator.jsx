@@ -618,6 +618,7 @@ export default function LandingPageConfigurator({
                   <PreExamLandingPage
                     config={landingConfig}
                     candidateName="Uday Kiran"
+                    examTitle={landingConfig.eventTitle || "CSI Round 3"}
                     isPreview={true}
                   />
                 </div>

@@ -4,6 +4,7 @@ import { VidyoraLogo } from "./VidyoraLogo";
 export default function PreExamLandingPage({
   config = {},
   candidateName = "",
+  examTitle = "",
   onContinue = () => {},
   isPreview = false,
 }) {
@@ -17,7 +18,7 @@ export default function PreExamLandingPage({
   const eventName = config.eventName ?? "COMPUTER SOCIETY OF INDIA";
   const eventTitle = config.eventTitle ?? "CSI ROUND 3";
   const logo = config.logo || "/csi-logo.png";
-  const mainHeading = config.mainHeading ?? "CONGRATULATIONS, CODER!";
+  const mainHeading = config.mainHeading ?? "CONGRATULATIONS, {name}!";
   const subHeading = config.subHeading ?? "YOU'VE MADE IT TO ROUND 3";
   const description =
     config.description ??
@@ -58,20 +59,43 @@ export default function PreExamLandingPage({
       ? config.journey.stages
       : defaultStages;
 
-  // Format participant greeting using organizer template & {name} placeholder
-  const formatGreeting = (heading, name) => {
-    const rawName = name && name.trim() !== "" ? name.trim().toUpperCase() : "CODER";
+  const rawName = candidateName && candidateName.trim() !== "" ? candidateName.trim().toUpperCase() : "CODER";
+  const rawExam = examTitle && examTitle.trim() !== "" ? examTitle.trim().toUpperCase() : (eventTitle || "EXAM");
 
+  // Dynamic placeholder replacer for {name}, {exam}, {event} across all template fields
+  const replacePlaceholders = (text) => {
+    if (!text || typeof text !== "string") return text;
+    let result = text;
+    // Replace candidate name ({name}, {participantName}, {candidateName})
+    if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(result)) {
+      result = result.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
+    }
+    // Replace exam title ({exam}, {examTitle}, {examName})
+    if (/\{exam\}|\{examTitle\}|\{examName\}/i.test(result)) {
+      result = result.replace(/\{exam\}|\{examTitle\}|\{examName\}/gi, rawExam);
+    }
+    // Replace event/org name ({event}, {eventName}, {organization})
+    if (/\{event\}|\{eventName\}|\{organization\}/i.test(result)) {
+      result = result.replace(/\{event\}|\{eventName\}|\{organization\}/gi, eventName);
+    }
+    return result;
+  };
+
+  // Format participant greeting using organizer template & placeholders
+  const formatGreeting = (heading, name) => {
     if (!heading || heading.trim() === "") {
       return `CONGRATULATIONS ${rawName}`;
     }
 
     let result = heading;
+    const replaced = replacePlaceholders(result);
 
-    // 1. Explicit placeholder replacement ({name}, {participantName}, {candidateName})
+    // 1. Explicit placeholder replacement ({name})
     if (/\{name\}|\{participantName\}|\{candidateName\}/i.test(result)) {
-      return result.replace(/\{name\}|\{participantName\}|\{candidateName\}/gi, rawName);
+      return replaced;
     }
+
+    result = replaced;
 
     // 2. If name is available and heading contains "CODER" or "Coder" (legacy placeholder)
     if (name && name.trim() !== "" && /coder/i.test(result)) {
@@ -95,6 +119,12 @@ export default function PreExamLandingPage({
   };
 
   const greetingText = formatGreeting(mainHeading, candidateName);
+  const formattedSubHeading = replacePlaceholders(subHeading);
+  const formattedDescription = replacePlaceholders(description);
+  const formattedMotivationalHeading = replacePlaceholders(motivationalHeading);
+  const formattedChallengeLabel = replacePlaceholders(challengeLabel);
+  const formattedTagline = replacePlaceholders(tagline);
+  const formattedFooterText = replacePlaceholders(footerText);
 
   const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
@@ -204,13 +234,13 @@ export default function PreExamLandingPage({
 
           {subHeading && (
             <p className="text-base sm:text-xl font-bold tracking-wider text-emerald-400 uppercase font-sans mb-3">
-              {subHeading}
+              {formattedSubHeading}
             </p>
           )}
 
           {description && (
             <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-300 leading-relaxed mb-5 font-normal">
-              {description}
+              {formattedDescription}
             </p>
           )}
         </div>
@@ -224,7 +254,7 @@ export default function PreExamLandingPage({
           >
             <span className="text-xs sm:text-sm font-sans font-bold tracking-widest text-amber-400 uppercase flex items-center justify-center gap-2">
               <span>⚡</span>
-              <span>{motivationalHeading}</span>
+              <span>{formattedMotivationalHeading}</span>
             </span>
           </div>
         )}
@@ -308,13 +338,13 @@ export default function PreExamLandingPage({
 
           {challengeLabel && (
             <h2 className="text-lg sm:text-2xl font-black font-display tracking-tight text-white uppercase mb-1">
-              {challengeLabel}
+              {formattedChallengeLabel}
             </h2>
           )}
 
           {tagline && (
             <p className="text-xs sm:text-sm font-sans font-bold tracking-widest text-emerald-400 uppercase">
-              {tagline}
+              {formattedTagline}
             </p>
           )}
         </div>
@@ -349,7 +379,7 @@ export default function PreExamLandingPage({
               mounted ? "opacity-100" : "opacity-0"
             }`}
           >
-            🚀 {footerText}
+            🚀 {formattedFooterText}
           </p>
         )}
       </div>
