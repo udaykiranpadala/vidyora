@@ -554,7 +554,7 @@ export default function ExamAttempt() {
     }
   };
 
-  const submitAnswerDraft = async (goNext = true) => {
+  const submitAnswerDraft = async (goNext = true, isDraftNavigation = false) => {
     if (!question) return;
     setSubmitting(true);
     setSubmitError("");
@@ -577,6 +577,7 @@ export default function ExamAttempt() {
           language: language,
           timeTakenSeconds,
           autoSubmitted: false,
+          isDraft: isDraftNavigation,
           remainingSeconds
         });
         setAutoSaveStatus("Saved");
@@ -619,10 +620,10 @@ export default function ExamAttempt() {
 
   const handleQuestionTimerExpire = useCallback(() => {
     if (settings.singleQuestionMode) {
-      submitAnswerDraftRef.current?.(false);
+      submitAnswerDraftRef.current?.(false, true);
       setCurrentQuestionOpen(false);
     } else {
-      submitAnswerDraftRef.current?.(true);
+      submitAnswerDraftRef.current?.(true, false);
     }
   }, [settings.singleQuestionMode]);
 
@@ -639,7 +640,7 @@ export default function ExamAttempt() {
     const prevIdx = questionIndex - 1;
     if (prevIdx >= 0 && question) {
       try {
-        await submitAnswerDraft(false);
+        await submitAnswerDraft(false, true);
       } catch (e) {
         console.error("Failed to save draft on prev question:", e);
       }
@@ -650,7 +651,7 @@ export default function ExamAttempt() {
   const handleNavigateToQuestion = async (idx) => {
     if (idx === questionIndex || !question) return;
     try {
-      await submitAnswerDraft(false);
+      await submitAnswerDraft(false, true);
     } catch (e) {
       console.error("Failed to save draft on navigation:", e);
     }
@@ -674,7 +675,9 @@ export default function ExamAttempt() {
       setRunResults(res.data.results || []);
     } catch (err) {
       const errMsg = err.response?.data?.message || 
-        "Could not execute code: Code execution service (backend/Judge0 CE/Docker) is unavailable or offline. Please check system status.";
+        (err.response?.status === 429
+          ? "Execution server is currently busy grading other submissions. Please wait a few seconds and try again."
+          : "Could not execute code: Code execution service is temporarily unavailable. Please check system status.");
       setRunResults([{ passed: false, error: errMsg }]);
     } finally {
       setRunning(false);

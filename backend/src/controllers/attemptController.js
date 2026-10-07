@@ -257,7 +257,7 @@ export const getQuestionForAttempt = async (req, res) => {
     const idx = parseInt(index, 10);
 
     // Fetch all questions for this exam
-    let allQuestionsFull = await Question.find({ exam: attempt.exam }).sort({ order: 1 });
+    let allQuestionsFull = await Question.find({ exam: attempt.exam }).sort({ order: 1 }).lean();
 
     // Order according to candidate attempt's questionOrder if available
     if (attempt.questionOrder && attempt.questionOrder.length > 0) {
@@ -379,13 +379,38 @@ export const runCode = async (req, res) => {
       return res.json({ results: [], message: "No test cases configured for this question." });
     }
 
+    // Pre-flight check: return early if code is blank without calling compiler engine
+    if (!code || !code.trim()) {
+      return res.json({
+        results: testCasesToRun.map((tc) => ({
+          passed: false,
+          pointsEarned: 0,
+          stdout: "",
+          stderr: "No code provided to execute.",
+          compileOutput: "No code provided to execute.",
+          status: { id: 11, description: "Runtime Error (No Code)" },
+          time: 0,
+          memory: 0,
+          exit_code: 1,
+          input: tc.input || "",
+          expectedOutput: tc.expectedOutput || "",
+        })),
+        compileError: "Please write some code before running.",
+      });
+    }
+
     let results;
     let compileError = null;
     try {
-      const runRes = await runAgainstTestCases(code || "", activeLanguage, testCasesToRun);
+      const runRes = await runAgainstTestCases(code, activeLanguage, testCasesToRun);
       results = runRes.results;
       compileError = runRes.compileError;
     } catch (err) {
+      if (err.status === 429 || err.code === "ERR_CONCURRENCY_LIMIT") {
+        return res.status(429).json({
+          message: err.message || "Server is currently busy grading other submissions. Please retry in a few seconds.",
+        });
+      }
       console.warn("Judge0 execution warning:", err.message);
       return res.status(400).json({
         message: err.message || "Code execution failed.",
@@ -465,9 +490,9 @@ export const submitAnswer = async (req, res) => {
     } else {
       let testCaseResults = existingAnswer?.testCaseResults || [];
 
-      // If this is a 15s background auto-save draft, skip heavy external Judge0 evaluation to handle 100+ concurrent students instantly
-      if (isDraft && existingAnswer) {
-        pointsEarned = existingAnswer.pointsEarned || 0;
+      // If this is a draft save (background sync or question navigation), skip heavy external Judge0 evaluation
+      if (isDraft) {
+        pointsEarned = existingAnswer ? (existingAnswer.pointsEarned || 0) : 0;
       } else if (code && code.trim() && language) {
         try {
           const { results, totalPointsEarned } = await runAgainstTestCases(
@@ -481,13 +506,19 @@ export const submitAnswer = async (req, res) => {
           }));
           pointsEarned = totalPointsEarned;
         } catch (err) {
-          console.error("Judge0 grading service offline, auto-saving answer code:", err.message);
-          testCaseResults = (question.testCases || []).map(() => ({
+          console.warn("Judge0 grading service offline or busy, saving answer code safely:", err.message);
+          testCaseResults = existingAnswer?.testCaseResults || (question.testCases || []).map(() => ({
             passed: false,
             pointsEarned: 0,
           }));
-          pointsEarned = 0;
+          pointsEarned = existingAnswer ? (existingAnswer.pointsEarned || 0) : 0;
         }
+      } else {
+        testCaseResults = (question.testCases || []).map(() => ({
+          passed: false,
+          pointsEarned: 0,
+        }));
+        pointsEarned = 0;
       }
 
       answerRecord = {
@@ -643,7 +674,10 @@ export const getAttemptLobby = async (req, res) => {
       return res.status(404).json({ message: "Exam not found" });
     }
 
-    const questions = await Question.find({ exam: exam._id }).sort({ order: 1 });
+    const questions = await Question.find({ exam: exam._id })
+      .sort({ order: 1 })
+      .select("_id order title totalPoints type")
+      .lean();
 
     res.json({
       examTitle: exam.title,
